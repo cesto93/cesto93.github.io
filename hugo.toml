@@ -1,0 +1,23 @@
+baseURL = 'https://cesto93.github.io/'
+locale = 'en-us'
+title = 'My Blog'
+theme = 'PaperMod'
+
+[params]
+  description = 'My personal blog'
+  dateFormat = '2006-01-02'
+
+  homeInfoParams = { Title = 'Welcome', Content = 'This is my blog.' }
+
+  socialIcons = []
+
+[menu]
+  main = [
+    { identifier = 'home', name = 'Home', url = '/', weight = 1 },
+    { identifier = 'posts', name = 'Posts', url = '/posts/', weight = 2 },
+    { identifier = 'search', name = 'Search', url = '/search/', weight = 3 },
+    { identifier = 'tags', name = 'Tags', url = '/tags/', weight = 4 },
+  ]
+
+[outputs]
+  home = ['HTML', 'RSS', 'JSON']
