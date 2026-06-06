@@ -4,6 +4,7 @@ date: 2026-05-27
 description: My first post
 tags:
   - presentation
+  - english
 ---
 
 Welcome to my blog!
