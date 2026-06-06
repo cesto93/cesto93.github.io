@@ -13,7 +13,7 @@ Oggi nell'utilizzo di Gemini mi sono imbattuto in un neologismo, ora io sono ave
 sono relativamente giovane e ho a che fare con la tecnologia, internet e la lingua di internet l'inglese.
 Questo neologismo però io non l'ho mai sentito, parlo del neologismo "pontiato".
 
-![pontiato](../pontiato.png)
+![pontiato](/pontiato.png)
 
 Quando ho chiesto spiegazioni Gemini mi ha detto che viene dall'inglese bridged, termine che mi torna in inglese ma
 che mai avrei tradotto in pontiato.
