@@ -1,23 +1,44 @@
 baseURL = 'https://cesto93.github.io/'
-locale = 'en-us'
 title = 'My Blog'
 theme = 'PaperMod'
 
-[params]
-  description = 'My personal blog'
-  dateFormat = '2006-01-02'
+defaultContentLanguage = 'it'
+defaultContentLanguageInSubdir = true
 
-  homeInfoParams = { Title = 'Welcome', Content = 'This is my blog.' }
+[languages]
+  [languages.it]
+    contentDir = 'content/it'
+    locale = 'it-it'
+    label = 'Italiano'
+    weight = 1
+    [languages.it.params]
+      description = 'Il mio blog personale'
+      dateFormat = '2006-01-02'
+      homeInfoParams = { Title = 'Benvenuto', Content = 'Questo è il mio blog.' }
+    [languages.it.menu]
+      main = [
+        { identifier = 'home', name = 'Home', url = '/it/', weight = 1 },
+        { identifier = 'posts', name = 'Posts', url = '/it/posts/', weight = 2 },
+        { identifier = 'search', name = 'Cerca', url = '/it/search/', weight = 3 },
+        { identifier = 'tags', name = 'Tag', url = '/it/tags/', weight = 4 },
+      ]
 
-  socialIcons = []
-
-[menu]
-  main = [
-    { identifier = 'home', name = 'Home', url = '/', weight = 1 },
-    { identifier = 'posts', name = 'Posts', url = '/posts/', weight = 2 },
-    { identifier = 'search', name = 'Search', url = '/search/', weight = 3 },
-    { identifier = 'tags', name = 'Tags', url = '/tags/', weight = 4 },
-  ]
+  [languages.en]
+    contentDir = 'content/en'
+    locale = 'en-us'
+    label = 'English'
+    weight = 2
+    [languages.en.params]
+      description = 'My personal blog'
+      dateFormat = '2006-01-02'
+      homeInfoParams = { Title = 'Welcome', Content = 'This is my blog.' }
+    [languages.en.menu]
+      main = [
+        { identifier = 'home', name = 'Home', url = '/en/', weight = 1 },
+        { identifier = 'posts', name = 'Posts', url = '/en/posts/', weight = 2 },
+        { identifier = 'search', name = 'Search', url = '/en/search/', weight = 3 },
+        { identifier = 'tags', name = 'Tags', url = '/en/tags/', weight = 4 },
+      ]
 
 [outputs]
   home = ['HTML', 'RSS', 'JSON']

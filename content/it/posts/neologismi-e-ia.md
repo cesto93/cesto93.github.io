@@ -6,6 +6,7 @@ tags:
   - language
   - IA
   - Italian
+translationKey: "neologismi-ia"
 ---
 
 Oggi nell'utilizzo di Gemini mi sono imbattuto in un neologismo, ora io sono avezzo di solito ai neologismi perché

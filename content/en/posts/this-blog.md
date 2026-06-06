@@ -5,6 +5,7 @@ description: My first post
 tags:
   - presentation
   - english
+translationKey: "this-blog"
 ---
 
 Welcome to my blog!
