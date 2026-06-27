@@ -43,7 +43,8 @@ for ep in endpoints:
     url = f"{BASE_URL}{ep}"
     name = ep.strip("/").replace("/", "_")
     page = 1
-    all_data = []
+    models = []
+    meta = None
     while True:
         print(f"Fetching {url}?page={page} ...")
         resp = requests.get(url, headers=HEADERS, params={"page": page})
@@ -51,12 +52,19 @@ for ep in endpoints:
             print(f"  Page {page} -> 500 (end of results)")
             break
         resp.raise_for_status()
-        data = resp.json()
-        if not data:
+        body = resp.json()
+        items = body.get("data", body)
+        if not items:
             break
-        all_data.extend(data)
+        if page == 1:
+            meta = {k: v for k, v in body.items() if k != "data"}
+        models.extend(items)
         remaining = resp.headers.get("X-RateLimit-Remaining", "?")
-        print(f"  Page {page} OK ({len(data)} items, remaining: {remaining})")
+        print(f"  Page {page} OK ({len(items)} items, remaining: {remaining})")
+        total_pages = body.get("pagination", {}).get("total_pages", 0)
+        if page >= total_pages:
+            break
         page += 1
-    (out_dir / f"{name}.json").write_text(json.dumps(all_data, indent=2))
-    print(f"  Done -> data/{name}.json ({len(all_data)} total items)")
+    output = {**meta, "data": models} if meta else models
+    (out_dir / f"{name}.json").write_text(json.dumps(output, indent=2))
+    print(f"  Done -> data/{name}.json ({len(models)} total items)")
