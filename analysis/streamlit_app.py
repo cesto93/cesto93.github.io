@@ -11,8 +11,12 @@ df = load_data()
 # --------------- SIDEBAR ---------------
 st.sidebar.title("Filters")
 creators = sorted(df["creator"].dropna().unique())
+default_creators = [c for c in creators if c in {
+    "Alibaba", "Anthropic", "DeepSeek", "Google", "Z AI",
+    "Kimi", "Meta", "MiniMax", "Mistral", "NVIDIA", "OpenAI", "Xiaomi",
+}]
 selected_creators = st.sidebar.multiselect(
-    "Model creator", creators, default=creators
+    "Model creator", creators, default=default_creators
 )
 intel_range = st.sidebar.slider(
     "Intelligence index range",
@@ -95,22 +99,4 @@ fig3 = px.bar(
 fig3.update_layout(yaxis={"categoryorder": "total ascending"})
 st.plotly_chart(fig3, use_container_width=True)
 
-# --------------- RELEASE TIMELINE ---------------
-st.subheader("Models Released Over Time")
-release_counts = (
-    filtered.dropna(subset=["release_date"])
-    .set_index("release_date")
-    .resample("ME")
-    .size()
-)
-if not release_counts.empty:
-    fig4 = px.line(
-        x=release_counts.index,
-        y=release_counts.values,
-        labels={"x": "Date", "y": "New models"},
-    )
-    fig4.update_layout(showlegend=False)
-    st.plotly_chart(fig4, use_container_width=True)
-else:
-    st.info("No release date data available for the current filter.")
 
