@@ -56,8 +56,13 @@ def build_frontier_chart(data, title, color_by="creator"):
     fig.update_traces(textposition="top center", marker=dict(size=10))
 
     x_ord = data["release_date"].map(pd.Timestamp.toordinal).astype(float)
-    coeffs = np.polyfit(x_ord, data["intelligence_index"], deg=3)
+    coeffs, residuals, _, _, _ = np.polyfit(x_ord, data["intelligence_index"], deg=3, full=True)
     poly = np.poly1d(coeffs)
+
+    y_pred = poly(x_ord)
+    ss_res = np.sum((data["intelligence_index"] - y_pred) ** 2)
+    ss_tot = np.sum((data["intelligence_index"] - np.mean(data["intelligence_index"])) ** 2)
+    r_squared = 1 - ss_res / ss_tot
 
     six_months_days = 183
     x_max = x_ord.max()
@@ -85,7 +90,7 @@ def build_frontier_chart(data, title, color_by="creator"):
     today = pd.Timestamp.today()
     x_end = max(x_max + six_months_days, today.toordinal())
     fig.update_layout(
-        title=title,
+        title=f"{title}  ·  R² = {r_squared:.3f}",
         xaxis=dict(
             range=[
                 pd.Timestamp.fromordinal(int(x_ord.min())),
@@ -118,3 +123,43 @@ ow_filtered = filtered[
 ]
 ow_frontier = compute_frontier(ow_filtered)
 build_frontier_chart(ow_frontier, "Most Intelligent Open-Weight Model Over Time", color_by="creator")
+
+# --------------- PREDICTION: When will open-weight catch up? ---------------
+st.title("Open-Weight Catch-Up Prediction")
+
+closed_creators = {"OpenAI", "Anthropic", "Google"}
+closed_frontier = frontier[frontier["creator"].isin(closed_creators)]
+
+if closed_frontier.empty or ow_frontier.empty:
+    st.info("Not enough data to make a prediction.")
+else:
+    best_closed = closed_frontier.loc[
+        closed_frontier["intelligence_index"].idxmax()
+    ]
+    best_closed_val = best_closed["intelligence_index"]
+    best_closed_name = best_closed["clean_name"]
+
+    ow_x = ow_frontier["release_date"].map(pd.Timestamp.toordinal).astype(float)
+    ow_coeffs = np.polyfit(ow_x, ow_frontier["intelligence_index"], deg=3)
+    ow_poly = np.poly1d(ow_coeffs)
+
+    now_ord = pd.Timestamp.today().toordinal()
+    search_ord = np.linspace(now_ord, now_ord + 365 * 10, 5000)
+    search_vals = ow_poly(search_ord)
+    above = np.where(search_vals >= best_closed_val)[0]
+
+    if len(above) > 0:
+        catchup_ord = search_ord[above[0]]
+        catchup_date = pd.Timestamp.fromordinal(int(catchup_ord))
+        years_from_now = (catchup_ord - now_ord) / 365.0
+        st.success(
+            f"Open-weight models are predicted to reach **{best_closed_name}**'s "
+            f"intelligence index of **{best_closed_val:.1f}** by "
+            f"**{catchup_date.date()}** "
+            f"({years_from_now:.1f} years from now)."
+        )
+    else:
+        st.info(
+            "Open-weight models are not predicted to catch up to the current "
+            "best closed model within the next 10 years."
+        )
