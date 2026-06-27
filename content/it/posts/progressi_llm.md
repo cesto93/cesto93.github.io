@@ -10,22 +10,22 @@ tags:
 translationKey: "llm-progress-analysis"
 ---
 
-Sentiamo spesso del progresso degli LLM e oggi ho provato ad usare i dati di [Artificial Analysis](https://artificialanalysis.ai/) per fare delle analisi sul trend.
+Sentiamo spesso parlare del progresso degli LLM e oggi ho provato ad usare i dati di [Artificial Analysis](https://artificialanalysis.ai/) per fare delle analisi sul trend.
 Questo benchmark è uno dei più utilizzati ed anche uno che misura il numero maggiore di modelli, nel free tier offre anche i
 dati a noi comuni mortali.
 
-Partiamo da un trend assoluto la capacità di intelligenza del migliore modello su scala temporale.
+Partiamo da un trend assoluto: la capacità di intelligenza del migliore modello su scala temporale.
 Ci ho aggiunto una regressione polinomiale per provare a stimare il trend e proiettarlo nei prossimi sei mesi,
-sebbene non metto la mano sul fuoco su questa analisi vorrei fare delle considerazioni (anche solo per vederle in post e capire
+sebbene non metta la mano sul fuoco su questa analisi vorrei fare delle considerazioni (anche solo per vederle in post e capire
 di quanto sbagliavo XD).
 
 {{< llm-dashboard >}}
 
-Facciamo una considerazione sulla situazione attuale, Claude Fable è arrivato a circa 60 con un incremento abbastanza significativo rispetto al modello precedente. Claude Fable al momento è considerato così pericoloso da essere stato bloccato dal governo americano nell'export. Chiaramente non è detto che un altro modello che raggiunga 60 abbia la stessa pericolosità ma cerchiamo di ragionare sui dati che abbiamo.
+Facciamo una considerazione sulla situazione attuale: Claude Fable è arrivato a circa 60 con un incremento abbastanza significativo rispetto al modello precedente. Claude Fable al momento è considerato così pericoloso da essere stato bloccato dal governo americano dall'export. Chiaramente non è detto che un altro modello che raggiunga 60 abbia la stessa pericolosità ma cerchiamo di ragionare sui dati che abbiamo.
 
-Seguendo il trend verso Settembre 2026 (al ritorno dalle ferie) dovrebbe uscire un modello che stacca Fable di 5 punti, se il trend continuasse e i nuovi modelli closed uscissero. Verso Novembre 2026 staremmo sui 70 quindi con uno stacco di 10 punti.
+Seguendo il trend verso Settembre 2026 (al ritorno dalle ferie) dovrebbe uscire un modello che stacca Fable di 5 punti, se il trend continuasse e i nuovi modelli closed uscissero. Verso Novembre 2026 staremmo sui 70, quindi con uno stacco di 10 punti.
 
-È chiaro che questi modelli avrebbero sicuramente un impatto sia a livello di sicurezza che a livello di performance, stiamo parlando di un modello che staccherà del doppio Fable rispetto a quanto Fable ad ora stacca Opus, ci deve essere una qualche conseguenza.
+È chiaro che questi modelli avrebbero sicuramente un impatto sia a livello di sicurezza che a livello di performance, stiamo parlando di un modello che staccherà Fable del doppio rispetto a quanto Fable ad ora stacca Opus, ci deve essere una qualche conseguenza.
 
 Però potremmo dire che magari il governo americano in qualche modo mette un paletto e dice che tutti i modelli sopra una certa soglia non usciranno.
 Quindi ora è interessante vedere come è il trend sui modelli open weight.
