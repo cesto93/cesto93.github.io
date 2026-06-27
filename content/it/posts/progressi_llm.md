@@ -16,8 +16,8 @@ dati a noi comuni mortali.
 
 Partiamo da un trend assoluto: la capacità di intelligenza del migliore modello su scala temporale.
 Ci ho aggiunto una regressione polinomiale per provare a stimare il trend e proiettarlo nei prossimi sei mesi,
-sebbene non metta la mano sul fuoco su questa analisi vorrei fare delle considerazioni (anche solo per vederle in post e capire
-di quanto sbagliavo XD).
+sebbene non metta la mano sul fuoco su questa analisi, vorrei fare delle considerazioni (anche solo per vederle in post e capire
+di quanto sbagliassi XD).
 
 {{< llm-dashboard >}}
 
@@ -25,21 +25,23 @@ Facciamo una considerazione sulla situazione attuale: Claude Fable è arrivato a
 
 Seguendo il trend verso Settembre 2026 (al ritorno dalle ferie) dovrebbe uscire un modello che stacca Fable di 5 punti, se il trend continuasse e i nuovi modelli closed uscissero. Verso Novembre 2026 staremmo sui 70, quindi con uno stacco di 10 punti.
 
-È chiaro che questi modelli avrebbero sicuramente un impatto sia a livello di sicurezza che a livello di performance, stiamo parlando di un modello che staccherà Fable del doppio rispetto a quanto Fable ad ora stacca Opus, ci deve essere una qualche conseguenza.
+È chiaro che questi modelli avrebbero sicuramente un impatto sia a livello di sicurezza che a livello di performance.
+Stiamo parlando di un modello che staccherà Fable del doppio rispetto a quanto Fable ad ora stacca Opus, ci deve essere una qualche conseguenza.
 
 Però potremmo dire che magari il governo americano in qualche modo mette un paletto e dice che tutti i modelli sopra una certa soglia non usciranno.
-Quindi ora è interessante vedere come è il trend sui modelli open weight.
+Quindi ora è interessante vedere com'è il trend sui modelli open weight.
 
 {{< llm-open-dashboard >}}
 
-Ta-da il trend dice che gli open weight sono indietro di circa 4 mesi su questo benchmark, si discosta un po' dai 6 mesi che sentiamo spesso. Ed ecco la parte interessante verso la fine di Ottobre dovrebbe arrivare un modello open che ha lo stesso punteggio di Mythos, per cui tra 4 mesi Mythos può essere liberato e dato a tutti.
+Ta-da, il trend dice che gli open weight sono indietro di circa 4 mesi su questo benchmark, si discosta un po' dai 6 mesi che sentiamo spesso. Ed ecco la parte interessante: verso la fine di Ottobre dovrebbe arrivare un modello open che ha lo stesso punteggio di Mythos, per cui tra 4 mesi Mythos può essere liberato dalle sue catene e dato a tutti.
 
 Ma nel frattempo sarà uscito il nuovo Mythos 5.1.
 
-Ultima nota che vorrei porre è perché il trend potrebbe rallentare, secondo me è più probabile che rallenti il trend dei modelli chiusi, la mossa del governo americano deve aver scoraggiato Anthropic e OpenAI da rilasciare modelli più grandi.
-Ad ora non li stanno neanche vendendo, o almeno non come vorrebbero e quanto vorrebbero.
+L'ultima nota che vorrei porre è perché il trend potrebbe rallentare.
+Secondo me è più probabile che rallenti il trend dei modelli chiusi, la mossa del governo americano deve aver scoraggiato Anthropic e OpenAI dal rilasciare modelli più grandi.
+Ad ora non li stanno neanche vendendo, o almeno non come e quanto vorrebbero.
 Questi modelli devono ripagarsi in qualche modo, altrimenti conviene investire in modelli più efficienti, meno pericolosi e più vendibili.
 
-Nel trend open weight vedo la stessa velocità del trend closed, a meno che Mythos non rappresenti chissà quale salto di prestazioni. La mia tesi è che non sia così visto che comunque è uscito GPT 5.6 che viene riportato e bloccato come Mythos, ha anche un nome accattivante come Mythos (Sol).
+Nel trend open weight vedo la stessa velocità del trend closed, a meno che Mythos non rappresenti chissà quale salto di prestazioni. La mia tesi è che non sia così visto che comunque è uscito GPT 5.6 che viene descritto alla pari di Mythos e bloccato come Mythos, ha anche un nome accattivante come Mythos (Sol).
 
 Ed ora vi lascio aspettando un giorno un Mythos tutto mio.
