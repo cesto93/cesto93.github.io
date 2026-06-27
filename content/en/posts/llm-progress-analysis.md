@@ -3,10 +3,10 @@ title: "LLM Progress Analysis"
 date: 2026-06-27
 description: "An analysis of LLM progress on Artificial Analysis benchmarks"
 tags:
-  - llm
+  - LLM
+  - AI
   - data
   - dashboard
-  - english
 translationKey: "llm-progress-analysis"
 ---
 

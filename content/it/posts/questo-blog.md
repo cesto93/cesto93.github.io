@@ -4,7 +4,6 @@ date: 2026-05-27
 description: Il mio primo post
 tags:
   - presentazione
-  - italiano
 translationKey: "this-blog"
 ---
 

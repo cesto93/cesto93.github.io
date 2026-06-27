@@ -5,7 +5,8 @@ description: Come cambiano i neologismi con l'IA
 tags:
   - language
   - IA
-  - Italian
+  - LLM
+  - italiano
 translationKey: "neologismi-ia"
 ---
 

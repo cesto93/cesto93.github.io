@@ -5,7 +5,7 @@ description: How neologisms are changing with AI
 tags:
   - language
   - AI
-  - English
+  - LLM
 translationKey: "neologismi-ia"
 ---
 
