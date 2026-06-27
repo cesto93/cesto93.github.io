@@ -9,6 +9,8 @@ st.set_page_config(layout="wide", page_title="Frontier")
 
 df = load_data()
 
+df["clean_name"] = df["name"].str.replace(r"\s*\(.*?\)", "", regex=True).str.strip()
+
 # --------------- SIDEBAR ---------------
 st.sidebar.title("Filters")
 creators = sorted(df["creator"].dropna().unique())
@@ -44,8 +46,8 @@ def build_frontier_chart(data, title, color_by="creator"):
         x="release_date",
         y="intelligence_index",
         color=color_by,
-        hover_name="name",
-        text="name",
+        hover_name="clean_name",
+        text="clean_name",
         labels={
             "release_date": "Release date",
             "intelligence_index": "Intelligence index",
