@@ -15,15 +15,16 @@ Questo benchmark è uno dei più utilizzati ed anche uno che misura il numero ma
 dati a noi comuni mortali.
 
 Partiamo da un trend assoluto: la capacità di intelligenza del migliore modello su scala temporale.
-Ci ho aggiunto una regressione polinomiale per provare a stimare il trend e proiettarlo nei prossimi sei mesi,
+Ci ho aggiunto una regressione esponenziale per provare a stimare il trend e proiettarlo nei prossimi sei mesi,
 sebbene non metta la mano sul fuoco su questa analisi, vorrei fare delle considerazioni (anche solo per vederle in post e capire
 di quanto sbagliassi XD).
+PS so che potrebbe essere opinabile l'uso della regressione esponenziale, ma seguiamo l'esempio di Fable e immaginiamo.
 
 {{< llm-dashboard >}}
 
 Facciamo una considerazione sulla situazione attuale: Claude Fable è arrivato a circa 60 con un incremento abbastanza significativo rispetto al modello precedente. Claude Fable al momento è considerato così pericoloso da essere stato bloccato dal governo americano dall'export. Chiaramente non è detto che un altro modello che raggiunga 60 abbia la stessa pericolosità ma cerchiamo di ragionare sui dati che abbiamo.
 
-Seguendo il trend verso Settembre 2026 (al ritorno dalle ferie) dovrebbe uscire un modello che stacca Fable di 5 punti, se il trend continuasse e i nuovi modelli closed uscissero. Verso Novembre 2026 staremmo sui 70, quindi con uno stacco di 10 punti.
+Seguendo il trend verso Agosto 2026 (al ritorno dalle ferie) dovrebbe uscire un modello che stacca Fable di 10 punti, se il trend continuasse e i nuovi modelli closed uscissero. Verso Novembre 2026 staremmo sui 80, quindi con uno stacco di 20 punti.
 
 È chiaro che questi modelli avrebbero sicuramente un impatto sia a livello di sicurezza che a livello di performance.
 Stiamo parlando di un modello che staccherà Fable del doppio rispetto a quanto Fable ad ora stacca Opus, ci deve essere una qualche conseguenza.
@@ -33,7 +34,7 @@ Quindi ora è interessante vedere com'è il trend sui modelli open weight.
 
 {{< llm-open-dashboard >}}
 
-Ta-da, il trend dice che gli open weight sono indietro di circa 4 mesi su questo benchmark, si discosta un po' dai 6 mesi che sentiamo spesso. Ed ecco la parte interessante: verso la fine di Ottobre dovrebbe arrivare un modello open che ha lo stesso punteggio di Mythos, per cui tra 4 mesi Mythos può essere liberato dalle sue catene e dato a tutti.
+Ta-da, il trend dice che gli open weight sono indietro di circa 2 mesi su questo benchmark, si discosta un po' dai 6 mesi che sentiamo spesso. Ed ecco la parte interessante: verso la fine di Agosto dovrebbe arrivare un modello open che ha lo stesso punteggio di Mythos, per cui tra 2 mesi Mythos può essere liberato dalle sue catene e dato a tutti.
 
 Ma nel frattempo sarà uscito il nuovo Mythos 5.1.
 
