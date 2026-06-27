@@ -9,6 +9,30 @@
 
   const CLOSED_CREATORS = new Set(['OpenAI', 'Anthropic', 'Google']);
 
+  const lang = root.dataset.lang === 'it' ? 'it' : 'en';
+
+  const i18n = {
+    notEnoughData: {
+      en: 'Not enough open-weight data for frontier (need at least 4 frontier points).',
+      it: 'Dati open-weight insufficienti per la frontiera (servono almeno 4 punti).',
+    },
+    traceOw:        { en: 'Open-weight frontier',    it: 'Frontiera open-weight' },
+    traceTrend:     { en: 'Poly trend (deg 3)',      it: 'Trend polinomiale (grado 3)' },
+    traceProj:      { en: 'Projected 6 months',      it: 'Proiezione 6 mesi' },
+    chartTitle:     { en: 'Open-Weight Frontier',    it: 'Frontiera Open-Weight' },
+    axisRelease:    { en: 'Release date',            it: 'Data di rilascio' },
+    axisIntel:      { en: 'Intelligence index',      it: 'Indice di intelligenza' },
+    catchupNoData:  { en: 'Not enough data for a catch-up prediction.', it: 'Dati insufficienti per una previsione.' },
+    catchupReach:   { en: 'Open-weight models are predicted to reach',  it: 'I modelli open-weight raggiungeranno' },
+    catchupIntel:   { en: 'intelligence index of',   it: "con indice d'intelligenza di" },
+    catchupBy:      { en: 'by',                      it: 'entro il' },
+    catchupDays:    { en: 'days from now',           it: 'giorni da oggi' },
+    catchupNever:   { en: 'Open-weight models are not predicted to catch up to the current best closed model within the next 10 years.', it: 'I modelli open-weight non raggiungeranno il miglior modello closed nei prossimi 10 anni.' },
+    loadError:      { en: 'Failed to load data:',    it: 'Caricamento dati fallito:' },
+  };
+
+  function _(key) { return i18n[key][lang]; }
+
   const isDark = () => document.documentElement.dataset.theme !== 'light' &&
     (document.documentElement.dataset.theme === 'dark' ||
      window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -47,7 +71,7 @@
         renderCatchup(computeFrontier(owData), computeFrontier(closedData));
       })
       .catch(err => {
-        chartContainer.innerHTML = '<p style="color:red;text-align:center;padding:2rem">Failed to load data: ' + err.message + '</p>';
+        chartContainer.innerHTML = '<p style="color:red;text-align:center;padding:2rem">' + _('loadError') + ' ' + err.message + '</p>';
       });
   }
 
@@ -109,7 +133,7 @@
     const frontier = computeFrontier(data);
 
     if (frontier.length < 4) {
-      chartContainer.innerHTML = '<p style="color:' + fmt() + ';text-align:center;padding:2rem">Not enough open-weight data for frontier (need at least 4 frontier points).</p>';
+      chartContainer.innerHTML = '<p style="color:' + fmt() + ';text-align:center;padding:2rem">' + _('notEnoughData') + '</p>';
       return;
     }
 
@@ -138,7 +162,7 @@
       text: frontier.map(d => d.cleanName),
       mode: 'markers+text',
       type: 'scatter',
-      name: 'Open-weight frontier',
+      name: _('traceOw'),
       marker: { size: 10, color: frontier.map(d => creatorColor(d.creator)) },
       textposition: 'top center',
       hovertemplate: '%{text}<br>%{x|%Y-%m-%d}<br>Intel: %{y}<extra></extra>',
@@ -150,7 +174,7 @@
         y: xSmooth.filter((_, i) => histMask[i]).map(x => polyEval(coeffs, x)),
         mode: 'lines',
         type: 'scatter',
-        name: 'Poly trend (deg 3)',
+        name: _('traceTrend'),
         line: { color: 'rgba(200,200,200,0.6)', dash: 'solid', width: 2 },
       });
     }
@@ -161,7 +185,7 @@
         y: xSmooth.filter((_, i) => projMask[i]).map(x => polyEval(coeffs, x)),
         mode: 'lines',
         type: 'scatter',
-        name: 'Projected 6 months',
+        name: _('traceProj'),
         line: { color: 'rgba(255,100,100,0.5)', dash: 'dot', width: 2 },
       });
     }
@@ -177,12 +201,12 @@
       font: { color: fmt() },
       hovermode: 'closest',
       legend: { orientation: 'h', y: -0.2 },
-      title: { text: `Open-Weight Frontier  ·  R² = ${r2.toFixed(3)}` },
+      title: { text: _('chartTitle') + '  ·  R² = ' + r2.toFixed(3) },
       xaxis: {
-        title: 'Release date',
+        title: _('axisRelease'),
         range: [fromOrd(Math.min(...xOrd)), fromOrd(xEnd)],
       },
-      yaxis: { title: 'Intelligence index' },
+      yaxis: { title: _('axisIntel') },
     }, { responsive: true, displayModeBar: false });
   }
 
@@ -190,7 +214,7 @@
     if (!catchupContainer) return;
 
     if (owFrontier.length < 4 || closedFrontier.length === 0) {
-      catchupContainer.innerHTML = '<p style="color:' + fmt() + ';text-align:center;padding:1rem">Not enough data for a catch-up prediction.</p>';
+      catchupContainer.innerHTML = '<p style="color:' + fmt() + ';text-align:center;padding:1rem">' + _('catchupNoData') + '</p>';
       return;
     }
 
@@ -223,15 +247,15 @@
       const dateStr = catchupDate.toISOString().split('T')[0];
       catchupContainer.innerHTML =
         '<div style="padding:1rem;background:rgba(0,200,100,0.1);border-radius:8px;text-align:center;color:' + fmt() + '">' +
-        '<strong>Open-weight models</strong> are predicted to reach <strong>' + bestClosedName +
-        '</strong>\'s intelligence index of <strong>' + bestClosedVal.toFixed(1) +
-        '</strong> by <strong>' + dateStr +
-        '</strong> (' + yearsFromNow.toFixed(1) + ' years from now).' +
+        '<strong>' + _('catchupReach') + '</strong> <strong>' + bestClosedName +
+        '</strong> ' + _('catchupIntel') + ' <strong>' + bestClosedVal.toFixed(1) +
+        '</strong> ' + _('catchupBy') + ' <strong>' + dateStr +
+        '</strong> (' + Math.round((catchupOrd - nowOrd)) + ' ' + _('catchupDays') + ').' +
         '</div>';
     } else {
       catchupContainer.innerHTML =
         '<div style="padding:1rem;background:rgba(200,100,0,0.1);border-radius:8px;text-align:center;color:' + fmt() + '">' +
-        'Open-weight models are not predicted to catch up to the current best closed model within the next 10 years.' +
+        _('catchupNever') +
         '</div>';
     }
   }

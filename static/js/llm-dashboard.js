@@ -6,6 +6,24 @@
 
   const chartContainer = document.getElementById('llm-frontier-chart');
 
+  const lang = root.dataset.lang === 'it' ? 'it' : 'en';
+
+  const i18n = {
+    notEnoughData: {
+      en: 'Not enough data for frontier (need at least 4 frontier points).',
+      it: 'Dati insufficienti per la frontiera (servono almeno 4 punti).',
+    },
+    traceFrontier: { en: 'Frontier models',            it: 'Modelli frontiera' },
+    traceTrend:    { en: 'Poly trend (deg 3)',          it: 'Trend polinomiale (grado 3)' },
+    traceProj:     { en: 'Projected 6 months',          it: 'Proiezione 6 mesi' },
+    chartTitle:    { en: 'Most Intelligent Model Over Time', it: 'Modello più intelligente nel tempo' },
+    axisRelease:   { en: 'Release date',                it: 'Data di rilascio' },
+    axisIntel:     { en: 'Intelligence index',          it: 'Indice di intelligenza' },
+    loadError:     { en: 'Failed to load data:',        it: 'Caricamento dati fallito:' },
+  };
+
+  function _(key) { return i18n[key][lang]; }
+
   const isDark = () => document.documentElement.dataset.theme !== 'light' &&
     (document.documentElement.dataset.theme === 'dark' ||
      window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -40,7 +58,7 @@
         renderChart(data);
       })
       .catch(err => {
-        chartContainer.innerHTML = '<p style="color:red;text-align:center;padding:2rem">Failed to load data: ' + err.message + '</p>';
+        chartContainer.innerHTML = '<p style="color:red;text-align:center;padding:2rem">' + _('loadError') + ' ' + err.message + '</p>';
       });
   }
 
@@ -102,7 +120,7 @@
     const frontier = computeFrontier(data);
 
     if (frontier.length < 4) {
-      chartContainer.innerHTML = '<p style="color:' + fmt() + ';text-align:center;padding:2rem">Not enough data for frontier (need at least 4 frontier points).</p>';
+      chartContainer.innerHTML = '<p style="color:' + fmt() + ';text-align:center;padding:2rem">' + _('notEnoughData') + '</p>';
       return;
     }
 
@@ -131,7 +149,7 @@
       text: frontier.map(d => d.cleanName),
       mode: 'markers+text',
       type: 'scatter',
-      name: 'Frontier models',
+      name: _('traceFrontier'),
       marker: { size: 10, color: frontier.map(d => creatorColor(d.creator)) },
       textposition: 'top center',
       hovertemplate: '%{text}<br>%{x|%Y-%m-%d}<br>Intel: %{y}<extra></extra>',
@@ -143,7 +161,7 @@
         y: xSmooth.filter((_, i) => histMask[i]).map(x => polyEval(coeffs, x)),
         mode: 'lines',
         type: 'scatter',
-        name: 'Poly trend (deg 3)',
+        name: _('traceTrend'),
         line: { color: 'rgba(200,200,200,0.6)', dash: 'solid', width: 2 },
       });
     }
@@ -154,7 +172,7 @@
         y: xSmooth.filter((_, i) => projMask[i]).map(x => polyEval(coeffs, x)),
         mode: 'lines',
         type: 'scatter',
-        name: 'Projected 6 months',
+        name: _('traceProj'),
         line: { color: 'rgba(255,100,100,0.5)', dash: 'dot', width: 2 },
       });
     }
@@ -170,12 +188,12 @@
       font: { color: fmt() },
       hovermode: 'closest',
       legend: { orientation: 'h', y: -0.2 },
-      title: { text: `Most Intelligent Model Over Time  ·  R² = ${r2.toFixed(3)}` },
+      title: { text: _('chartTitle') + '  ·  R² = ' + r2.toFixed(3) },
       xaxis: {
-        title: 'Release date',
+        title: _('axisRelease'),
         range: [fromOrd(Math.min(...xOrd)), fromOrd(xEnd)],
       },
-      yaxis: { title: 'Intelligence index' },
+      yaxis: { title: _('axisIntel') },
     }, { responsive: true, displayModeBar: false });
   }
 
