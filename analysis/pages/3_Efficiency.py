@@ -15,11 +15,15 @@ df["clean_name"] = df["name"].str.replace(r"\s*\(.*?\)", "", regex=True).str.str
 df["avg_price"] = df[["price_input_1m", "price_output_1m"]].mean(axis=1)
 df = df[df["avg_price"].notna() & (df["avg_price"] > 0)].copy()
 
-# Only consider models under $5 / 1M tokens
-df = df[df["avg_price"] < 5].copy()
-
 # --------------- SIDEBAR ---------------
 st.sidebar.title("Filters")
+max_price = st.sidebar.slider(
+    "Max avg price ($ / 1M tokens)",
+    min_value=0.5,
+    max_value=20.0,
+    value=3.0,
+    step=0.5,
+)
 creators = sorted(df["creator"].dropna().unique())
 default_creators = [c for c in creators if c in {
     "Alibaba", "Anthropic", "DeepSeek", "Google", "Z AI",
@@ -28,20 +32,13 @@ default_creators = [c for c in creators if c in {
 selected_creators = st.sidebar.multiselect(
     "Model creator", creators, default=default_creators
 )
-intel_range = st.sidebar.slider(
-    "Intelligence range",
-    min_value=0.0,
-    max_value=float(df["intelligence_index"].max()),
-    value=(0.0, float(df["intelligence_index"].max())),
-)
+# Only consider models under the selected max price
+df = df[df["avg_price"] < max_price].copy()
 
-filtered = df[
-    (df["creator"].isin(selected_creators))
-    & (df["intelligence_index"].between(intel_range[0], intel_range[1]))
-]
+filtered = df[df["creator"].isin(selected_creators)]
 
 # --------------- BUDGET FRONTIER ---------------
-st.title("Most Intelligent Model Under $5 / 1M Tokens")
+st.title(f"Most Intelligent Model Under ${max_price:.1f} / 1M Tokens")
 
 def build_frontier_chart(data, title, color_by="creator"):
     if data.empty:
@@ -116,7 +113,7 @@ def compute_frontier(data):
 
 
 frontier = compute_frontier(filtered)
-build_frontier_chart(frontier, "Most Intelligent Model Under $5 / 1M Tokens")
+build_frontier_chart(frontier, f"Most Intelligent Model Under ${max_price:.1f} / 1M Tokens")
 
 # --------------- OPEN-WEIGHT BUDGET FRONTIER ---------------
 st.title("Open-Weight Budget Frontier")
@@ -124,4 +121,4 @@ ow_filtered = filtered[
     ~filtered["creator"].isin({"OpenAI", "Anthropic", "Google"})
 ]
 ow_frontier = compute_frontier(ow_filtered)
-build_frontier_chart(ow_frontier, "Most Intelligent Open-Weight Model Under $5 / 1M Tokens", color_by="creator")
+build_frontier_chart(ow_frontier, f"Most Intelligent Open-Weight Model Under ${max_price:.1f} / 1M Tokens", color_by="creator")
