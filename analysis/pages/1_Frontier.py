@@ -3,7 +3,13 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from scipy.optimize import curve_fit
+
 from utils import load_data
+
+
+def exp_func(x, a, b):
+    return a * np.exp(b * x)
 
 st.set_page_config(layout="wide", page_title="Frontier")
 
@@ -56,32 +62,35 @@ def build_frontier_chart(data, title, color_by="creator"):
     fig.update_traces(textposition="top center", marker=dict(size=10))
 
     x_ord = data["release_date"].map(pd.Timestamp.toordinal).astype(float)
-    coeffs, residuals, _, _, _ = np.polyfit(x_ord, data["intelligence_index"], deg=3, full=True)
-    poly = np.poly1d(coeffs)
+    x_min = x_ord.min()
+    x_shifted = x_ord - x_min
+    y = data["intelligence_index"].values
+    popt, _ = curve_fit(exp_func, x_shifted, y, p0=(1, 0.001), maxfev=10000)
+    a_fit, b_fit = popt
 
-    y_pred = poly(x_ord)
-    ss_res = np.sum((data["intelligence_index"] - y_pred) ** 2)
-    ss_tot = np.sum((data["intelligence_index"] - np.mean(data["intelligence_index"])) ** 2)
+    y_pred = exp_func(x_shifted, a_fit, b_fit)
+    ss_res = np.sum((y - y_pred) ** 2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
     r_squared = 1 - ss_res / ss_tot
 
     six_months_days = 183
     x_max = x_ord.max()
-    x_smooth_ord = np.linspace(x_ord.min(), x_max + six_months_days, 300)
-    x_smooth_dates = np.array([pd.Timestamp.fromordinal(int(v)) for v in x_smooth_ord])
+    x_smooth = np.linspace(x_ord.min(), x_max + six_months_days, 300)
+    x_smooth_dates = np.array([pd.Timestamp.fromordinal(int(v)) for v in x_smooth])
 
-    hist_mask = x_smooth_ord <= x_max
-    proj_mask = x_smooth_ord > x_max
+    hist_mask = x_smooth <= x_max
+    proj_mask = x_smooth > x_max
 
     fig.add_scatter(
         x=x_smooth_dates[hist_mask],
-        y=poly(x_smooth_ord[hist_mask]),
+        y=exp_func(x_smooth[hist_mask] - x_min, a_fit, b_fit),
         mode="lines",
-        name="Poly trend (deg 3)",
+        name="Exp trend",
         line=dict(color="rgba(200,200,200,0.6)", dash="solid"),
     )
     fig.add_scatter(
         x=x_smooth_dates[proj_mask],
-        y=poly(x_smooth_ord[proj_mask]),
+        y=exp_func(x_smooth[proj_mask] - x_min, a_fit, b_fit),
         mode="lines",
         name="Projected 6 months",
         line=dict(color="rgba(255,100,100,0.5)", dash="dot"),
@@ -140,12 +149,13 @@ else:
     best_closed_name = best_closed["clean_name"]
 
     ow_x = ow_frontier["release_date"].map(pd.Timestamp.toordinal).astype(float)
-    ow_coeffs = np.polyfit(ow_x, ow_frontier["intelligence_index"], deg=3)
-    ow_poly = np.poly1d(ow_coeffs)
+    ow_x_min = ow_x.min()
+    ow_popt, _ = curve_fit(exp_func, ow_x - ow_x_min, ow_frontier["intelligence_index"], p0=(1, 0.001), maxfev=10000)
+    ow_a, ow_b = ow_popt
 
     now_ord = pd.Timestamp.today().toordinal()
     search_ord = np.linspace(now_ord, now_ord + 365 * 10, 5000)
-    search_vals = ow_poly(search_ord)
+    search_vals = exp_func(search_ord - ow_x_min, ow_a, ow_b)
     above = np.where(search_vals >= best_closed_val)[0]
 
     if len(above) > 0:
