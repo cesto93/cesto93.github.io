@@ -7,7 +7,7 @@
   const chartContainer = document.getElementById('llm-open-frontier-chart');
   const catchupContainer = document.getElementById('llm-open-catchup');
 
-  const CLOSED_CREATORS = new Set(['OpenAI', 'Anthropic', 'Google']);
+  const CLOSED_CREATORS = new Set(['OpenAI', 'Anthropic', 'Google', 'xAI']);
 
   const lang = root.dataset.lang === 'it' ? 'it' : 'en';
 
