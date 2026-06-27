@@ -7,7 +7,7 @@ tags:
   - dati
   - dashboard
   - italiano
-translationKey: "free-llm-dashboard"
+translationKey: "llm-progress-analysis"
 ---
 
 Sentiamo spesso del progresso degli LLM e oggi ho provato ad usare i dati di [Artificial Analysis](https://artificialanalysis.ai/) per fare delle analisi sul trend.
