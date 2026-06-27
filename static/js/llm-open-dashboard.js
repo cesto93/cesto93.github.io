@@ -17,7 +17,7 @@
       it: 'Dati open-weight insufficienti per la frontiera (servono almeno 4 punti).',
     },
     traceOw:        { en: 'Open-weight frontier',    it: 'Frontiera open-weight' },
-    traceTrend:     { en: 'Poly trend (deg 3)',      it: 'Trend polinomiale (grado 3)' },
+    traceTrend:     { en: 'Exp trend',               it: 'Trend esponenziale' },
     traceProj:      { en: 'Projected 6 months',      it: 'Proiezione 6 mesi' },
     chartTitle:     { en: 'Open-Weight Frontier',    it: 'Frontiera Open-Weight' },
     axisRelease:    { en: 'Release date',            it: 'Data di rilascio' },
@@ -87,46 +87,22 @@
     });
   }
 
-  function polyFit(x, y, degree) {
+  function expFit(x, y) {
     const n = x.length;
-    const m = degree + 1;
-    const X = Array.from({ length: n }, (_, i) =>
-      Array.from({ length: m }, (_, j) => Math.pow(x[i], j))
-    );
-    const XtX = Array.from({ length: m }, (_, i) =>
-      Array.from({ length: m }, (_, j) =>
-        X.reduce((s, row) => s + row[i] * row[j], 0)
-      )
-    );
-    const XtY = Array.from({ length: m }, (_, i) =>
-      X.reduce((s, row, k) => s + row[i] * y[k], 0)
-    );
-    return solveLinear(XtX, XtY);
+    const xMin = Math.min(...x);
+    const xShifted = x.map(v => v - xMin);
+    const logY = y.map(v => Math.log(v));
+    const xMean = xShifted.reduce((a, b) => a + b, 0) / n;
+    const yMean = logY.reduce((a, b) => a + b, 0) / n;
+    const num = xShifted.reduce((s, xi, i) => s + (xi - xMean) * (logY[i] - yMean), 0);
+    const den = xShifted.reduce((s, xi) => s + (xi - xMean) ** 2, 0);
+    const b = num / den;
+    const logA = yMean - b * xMean;
+    return { a: Math.exp(logA), b, xMin };
   }
 
-  function solveLinear(A, b) {
-    const n = A.length;
-    const M = A.map((row, i) => [...row, b[i]]);
-    for (let col = 0; col < n; col++) {
-      let maxRow = col;
-      for (let row = col + 1; row < n; row++) {
-        if (Math.abs(M[row][col]) > Math.abs(M[maxRow][col])) maxRow = row;
-      }
-      [M[col], M[maxRow]] = [M[maxRow], M[col]];
-      const pivot = M[col][col];
-      for (let j = col; j <= n; j++) M[col][j] /= pivot;
-      for (let row = 0; row < n; row++) {
-        if (row !== col) {
-          const factor = M[row][col];
-          for (let j = col; j <= n; j++) M[row][j] -= factor * M[col][j];
-        }
-      }
-    }
-    return M.map(row => row[n]);
-  }
-
-  function polyEval(coeffs, x) {
-    return coeffs.reduce((s, c, i) => s + c * Math.pow(x, i), 0);
+  function expEval(fit, x) {
+    return fit.a * Math.exp(fit.b * (x - fit.xMin));
   }
 
   function renderOwChart(data) {
@@ -141,8 +117,8 @@
     const y = frontier.map(d => d.intelligenceIndex);
     const xDates = frontier.map(d => d.releaseDate);
 
-    const coeffs = polyFit(xOrd, y, 3);
-    const yPred = xOrd.map(x => polyEval(coeffs, x));
+    const fit = expFit(xOrd, y);
+    const yPred = xOrd.map(x => expEval(fit, x));
     const yMean = y.reduce((a, b) => a + b, 0) / y.length;
     const ssRes = y.reduce((s, yi, i) => s + (yi - yPred[i]) ** 2, 0);
     const ssTot = y.reduce((s, yi) => s + (yi - yMean) ** 2, 0);
@@ -171,7 +147,7 @@
     if (histMask.some(v => v)) {
       traces.push({
         x: xSmooth.filter((_, i) => histMask[i]).map(x => fromOrd(x)),
-        y: xSmooth.filter((_, i) => histMask[i]).map(x => polyEval(coeffs, x)),
+        y: xSmooth.filter((_, i) => histMask[i]).map(x => expEval(fit, x)),
         mode: 'lines',
         type: 'scatter',
         name: _('traceTrend'),
@@ -182,7 +158,7 @@
     if (projMask.some(v => v)) {
       traces.push({
         x: xSmooth.filter((_, i) => projMask[i]).map(x => fromOrd(x)),
-        y: xSmooth.filter((_, i) => projMask[i]).map(x => polyEval(coeffs, x)),
+        y: xSmooth.filter((_, i) => projMask[i]).map(x => expEval(fit, x)),
         mode: 'lines',
         type: 'scatter',
         name: _('traceProj'),
@@ -226,7 +202,7 @@
 
     const owX = owFrontier.map(d => d.releaseOrd);
     const owY = owFrontier.map(d => d.intelligenceIndex);
-    const owCoeffs = polyFit(owX, owY, 3);
+    const owFit = expFit(owX, owY);
 
     const nowOrd = Math.floor(Date.now() / 86400000) + EPOCH_ORD;
     const searchOrd = Array.from({ length: 5000 }, (_, i) =>
@@ -235,7 +211,7 @@
 
     let catchupOrd = null;
     for (let i = 0; i < searchOrd.length; i++) {
-      if (polyEval(owCoeffs, searchOrd[i]) >= bestClosedVal) {
+      if (expEval(owFit, searchOrd[i]) >= bestClosedVal) {
         catchupOrd = searchOrd[i];
         break;
       }
