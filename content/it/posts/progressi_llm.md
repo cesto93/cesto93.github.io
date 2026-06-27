@@ -25,7 +25,7 @@ Facciamo una considerazione sulla situazione attuale, Claude Fable è arrivato a
 
 Seguendo il trend verso Settembre 2026 (al ritorno dalle ferie) dovrebbe uscire un modello che stacca Fable di 5 punti, se il trend continuasse e i nuovi modelli closed uscissero. Verso Novembre 2026 staremmo sui 70 quindi con uno stacco di 10 punti.
 
-È chiaro che questi modelli avrebbero sicuramente un impatto sia a livello di sicurezza che a livello di performance, stiamo parlando di un modello che staccherà del doppio Fable rispetto a quanto Fable ad ora stacca Opus ci deve essere una qualche conseguenza.
+È chiaro che questi modelli avrebbero sicuramente un impatto sia a livello di sicurezza che a livello di performance, stiamo parlando di un modello che staccherà del doppio Fable rispetto a quanto Fable ad ora stacca Opus, ci deve essere una qualche conseguenza.
 
 Però potremmo dire che magari il governo americano in qualche modo mette un paletto e dice che tutti i modelli sopra una certa soglia non usciranno.
 Quindi ora è interessante vedere come è il trend sui modelli open weight.
