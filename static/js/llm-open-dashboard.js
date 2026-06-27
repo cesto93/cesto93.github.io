@@ -1,10 +1,13 @@
 (function () {
   'use strict';
 
-  const root = document.getElementById('llm-dashboard');
+  const root = document.getElementById('llm-open-dashboard');
   if (!root) return;
 
-  const chartContainer = document.getElementById('llm-frontier-chart');
+  const chartContainer = document.getElementById('llm-open-frontier-chart');
+  const catchupContainer = document.getElementById('llm-open-catchup');
+
+  const CLOSED_CREATORS = new Set(['OpenAI', 'Anthropic', 'Google']);
 
   const isDark = () => document.documentElement.dataset.theme !== 'light' &&
     (document.documentElement.dataset.theme === 'dark' ||
@@ -26,7 +29,7 @@
     fetch(root.dataset.src || '/data/language_models_free_2026-06-27.json')
       .then(r => r.json())
       .then(raw => {
-        const data = raw.data.map(m => {
+        const allData = raw.data.map(m => {
           const rd = m.release_date ? new Date(m.release_date) : null;
           return {
             cleanName: m.name.replace(/\s*\(.*?\)/g, '').trim(),
@@ -37,7 +40,11 @@
           };
         }).filter(d => d.releaseOrd != null && d.intelligenceIndex != null);
 
-        renderChart(data);
+        const owData = allData.filter(d => !CLOSED_CREATORS.has(d.creator));
+        const closedData = allData.filter(d => CLOSED_CREATORS.has(d.creator));
+
+        renderOwChart(owData);
+        renderCatchup(computeFrontier(owData), computeFrontier(closedData));
       })
       .catch(err => {
         chartContainer.innerHTML = '<p style="color:red;text-align:center;padding:2rem">Failed to load data: ' + err.message + '</p>';
@@ -98,11 +105,11 @@
     return coeffs.reduce((s, c, i) => s + c * Math.pow(x, i), 0);
   }
 
-  function renderChart(data) {
+  function renderOwChart(data) {
     const frontier = computeFrontier(data);
 
     if (frontier.length < 4) {
-      chartContainer.innerHTML = '<p style="color:' + fmt() + ';text-align:center;padding:2rem">Not enough data for frontier (need at least 4 frontier points).</p>';
+      chartContainer.innerHTML = '<p style="color:' + fmt() + ';text-align:center;padding:2rem">Not enough open-weight data for frontier (need at least 4 frontier points).</p>';
       return;
     }
 
@@ -131,7 +138,7 @@
       text: frontier.map(d => d.cleanName),
       mode: 'markers+text',
       type: 'scatter',
-      name: 'Frontier models',
+      name: 'Open-weight frontier',
       marker: { size: 10, color: frontier.map(d => creatorColor(d.creator)) },
       textposition: 'top center',
       hovertemplate: '%{text}<br>%{x|%Y-%m-%d}<br>Intel: %{y}<extra></extra>',
@@ -162,7 +169,7 @@
     const nowOrd = Math.floor(Date.now() / 86400000) + EPOCH_ORD;
     const xEnd = Math.max(xMax + sixMonthsDays, nowOrd);
 
-    Plotly.newPlot('llm-frontier-chart', traces, {
+    Plotly.newPlot('llm-open-frontier-chart', traces, {
       height: 550,
       margin: { t: 50, r: 120, b: 60, l: 60 },
       paper_bgcolor: bg,
@@ -170,13 +177,63 @@
       font: { color: fmt() },
       hovermode: 'closest',
       legend: { orientation: 'h', y: -0.2 },
-      title: { text: `Most Intelligent Model Over Time  ·  R² = ${r2.toFixed(3)}` },
+      title: { text: `Open-Weight Frontier  ·  R² = ${r2.toFixed(3)}` },
       xaxis: {
         title: 'Release date',
         range: [fromOrd(Math.min(...xOrd)), fromOrd(xEnd)],
       },
       yaxis: { title: 'Intelligence index' },
     }, { responsive: true, displayModeBar: false });
+  }
+
+  function renderCatchup(owFrontier, closedFrontier) {
+    if (!catchupContainer) return;
+
+    if (owFrontier.length < 4 || closedFrontier.length === 0) {
+      catchupContainer.innerHTML = '<p style="color:' + fmt() + ';text-align:center;padding:1rem">Not enough data for a catch-up prediction.</p>';
+      return;
+    }
+
+    const bestClosed = closedFrontier.reduce((a, b) =>
+      a.intelligenceIndex > b.intelligenceIndex ? a : b
+    );
+    const bestClosedVal = bestClosed.intelligenceIndex;
+    const bestClosedName = bestClosed.cleanName;
+
+    const owX = owFrontier.map(d => d.releaseOrd);
+    const owY = owFrontier.map(d => d.intelligenceIndex);
+    const owCoeffs = polyFit(owX, owY, 3);
+
+    const nowOrd = Math.floor(Date.now() / 86400000) + EPOCH_ORD;
+    const searchOrd = Array.from({ length: 5000 }, (_, i) =>
+      nowOrd + (365 * 10) * i / 4999
+    );
+
+    let catchupOrd = null;
+    for (let i = 0; i < searchOrd.length; i++) {
+      if (polyEval(owCoeffs, searchOrd[i]) >= bestClosedVal) {
+        catchupOrd = searchOrd[i];
+        break;
+      }
+    }
+
+    if (catchupOrd !== null) {
+      const catchupDate = fromOrd(Math.round(catchupOrd));
+      const yearsFromNow = (catchupOrd - nowOrd) / 365.0;
+      const dateStr = catchupDate.toISOString().split('T')[0];
+      catchupContainer.innerHTML =
+        '<div style="padding:1rem;background:rgba(0,200,100,0.1);border-radius:8px;text-align:center;color:' + fmt() + '">' +
+        '<strong>Open-weight models</strong> are predicted to reach <strong>' + bestClosedName +
+        '</strong>\'s intelligence index of <strong>' + bestClosedVal.toFixed(1) +
+        '</strong> by <strong>' + dateStr +
+        '</strong> (' + yearsFromNow.toFixed(1) + ' years from now).' +
+        '</div>';
+    } else {
+      catchupContainer.innerHTML =
+        '<div style="padding:1rem;background:rgba(200,100,0,0.1);border-radius:8px;text-align:center;color:' + fmt() + '">' +
+        'Open-weight models are not predicted to catch up to the current best closed model within the next 10 years.' +
+        '</div>';
+    }
   }
 
   const COLOR_MAP = {};

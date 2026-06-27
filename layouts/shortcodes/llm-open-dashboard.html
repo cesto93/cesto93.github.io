@@ -1,0 +1,18 @@
+<script src="https://cdn.jsdelivr.net/npm/plotly.js@2.35.2/dist/plotly.min.js"></script>
+<script src="/js/llm-open-dashboard.js" defer></script>
+<style>
+#llm-open-dashboard {
+  font-family: system-ui, -apple-system, sans-serif;
+  margin: 1.5rem 0;
+}
+#llm-open-dashboard .llm-chart {
+  margin-bottom: 2rem;
+}
+#llm-open-dashboard .llm-catchup {
+  margin-bottom: 2rem;
+}
+</style>
+<div id="llm-open-dashboard" data-src="/data/language_models_free_2026-06-27.json">
+  <div class="llm-chart" id="llm-open-frontier-chart"></div>
+  <div class="llm-catchup" id="llm-open-catchup"></div>
+</div>

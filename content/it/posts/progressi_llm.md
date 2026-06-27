@@ -24,3 +24,8 @@ di quanto sbagliavo XD).
 Facciamo una considerazione sulla situazione attuale, Claude Fable e' arrivato a circa 60 con un incremento abbastanza significativo rispetto al modello precedente. Claude Fable al momento e' considerato cosi' pericoloso da essere stato bloccato dal governo americano nell'export. Chiaramente non e' detto che un altro modello che raggiunga 60 abbia la stessa pericolosita' ma cerchiamo di ragionare sui dati che abbiamo.
 
 Seguendo il trend verso Settembre 2026 (al ritorno dalle ferie) dovrebbe uscire un modello che stacca Fable di 5 punti, se il trend continuasse e i nuovi modelli closed uscissero. Verso Novembre 2026 staremmo sui 70 quindi con uno stacco di 10 punti.
+
+E' chiaro che questi modelli avrebbe sicuramente un impatto sia a livello di sicurezza che a livello di performance.
+
+{{< llm-open-dashboard >}}
+
