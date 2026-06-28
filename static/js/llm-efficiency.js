@@ -17,7 +17,7 @@
     noData:        { en: 'No data available for the selected filters.', it: 'Nessun dato disponibile per i filtri selezionati.' },
     traceOthers:   { en: 'Other models', it: 'Altri modelli' },
     traceFrontier: { en: 'Frontier models', it: 'Modelli frontiera' },
-    traceTrend:    { en: 'Poly trend (deg 3)', it: 'Trend polinomiale (gr 3)' },
+    traceTrend:    { en: 'Exp trend', it: 'Trend esponenziale' },
     traceProj:     { en: 'Projected 6 months', it: 'Proiezione 6 mesi' },
     axisRelease:   { en: 'Release date', it: 'Data di rilascio' },
     axisIntel:     { en: 'Intelligence index', it: 'Indice di intelligenza' },
@@ -43,44 +43,26 @@
     return new Date((ord - EPOCH_ORD) * 86400000);
   }
 
-  // --------------- polynomial fit via normal equations ---------------
-  function polyFit(x, y, deg) {
+  // --------------- exponential fit ---------------
+  function expFit(x, y) {
     const n = x.length;
-    const m = deg + 1;
-    const X = Array.from({ length: n }, (_, i) =>
-      Array.from({ length: m }, (_, j) => Math.pow(x[i], j))
-    );
-    const XtX = Array.from({ length: m }, () => Array(m).fill(0));
-    const Xty = Array(m).fill(0);
-    for (let i = 0; i < m; i++) {
-      for (let j = 0; j < m; j++)
-        for (let k = 0; k < n; k++) XtX[i][j] += X[k][i] * X[k][j];
-      for (let k = 0; k < n; k++) Xty[i] += X[k][i] * y[k];
+    const xMin = Math.min.apply(null, x);
+    const xShifted = x.map(function (v) { return v - xMin; });
+    const logY = y.map(function (v) { return Math.log(v); });
+    var xMean = xShifted.reduce(function (a, b) { return a + b; }, 0) / n;
+    var yMean = logY.reduce(function (a, b) { return a + b; }, 0) / n;
+    var num = 0, den = 0;
+    for (var i = 0; i < n; i++) {
+      num += (xShifted[i] - xMean) * (logY[i] - yMean);
+      den += (xShifted[i] - xMean) * (xShifted[i] - xMean);
     }
-    const aug = XtX.map((r, i) => [...r, Xty[i]]);
-    for (let col = 0; col < m; col++) {
-      let mr = col;
-      for (let r = col + 1; r < m; r++)
-        if (Math.abs(aug[r][col]) > Math.abs(aug[mr][col])) mr = r;
-      [aug[col], aug[mr]] = [aug[mr], aug[col]];
-      for (let r = col + 1; r < m; r++) {
-        const f = aug[r][col] / aug[col][col];
-        for (let j = col; j <= m; j++) aug[r][j] -= f * aug[col][j];
-      }
-    }
-    const c = [];
-    for (let i = m - 1; i >= 0; i--) {
-      let s = aug[i][m];
-      for (let j = i + 1; j < m; j++) s -= aug[i][j] * c[j];
-      c[i] = s / aug[i][i];
-    }
-    return c;
+    var b = num / den;
+    var logA = yMean - b * xMean;
+    return { a: Math.exp(logA), b: b, xMin: xMin };
   }
 
-  function polyEval(c, x) {
-    let r = 0;
-    for (let i = c.length - 1; i >= 0; i--) r = r * x + c[i];
-    return r;
+  function expEval(fit, x) {
+    return fit.a * Math.exp(fit.b * (x - fit.xMin));
   }
 
   function computeFrontier(data) {
@@ -162,7 +144,14 @@
     if (frontier.length >= 4) {
       var xOrd = frontier.map(function (d) { return d.releaseOrd; });
       var y = frontier.map(function (d) { return d.intelligenceIndex; });
-      var coeffs = polyFit(xOrd, y, 3);
+      var fit = expFit(xOrd, y);
+      var yPred = xOrd.map(function (x) { return expEval(fit, x); });
+      var yMean = y.reduce(function (a, b) { return a + b; }, 0) / y.length;
+      var ssRes = y.reduce(function (s, yi, i) { return s + (yi - yPred[i]) * (yi - yPred[i]); }, 0);
+      var ssTot = y.reduce(function (s, yi) { return s + (yi - yMean) * (yi - yMean); }, 0);
+      var r2 = 1 - ssRes / ssTot;
+      title += '  \u00b7  R\u00b2 = ' + r2.toFixed(3);
+
       var sixMonths = 183;
       var xMax = Math.max.apply(null, xOrd);
       var xs = Array.from({ length: 300 }, function (_, i) {
@@ -174,7 +163,7 @@
       if (hist.some(Boolean)) {
         traces.push({
           x: xs.filter(function (_, i) { return hist[i]; }).map(function (x) { return fromOrd(x); }),
-          y: xs.filter(function (_, i) { return hist[i]; }).map(function (x) { return polyEval(coeffs, x); }),
+          y: xs.filter(function (_, i) { return hist[i]; }).map(function (x) { return expEval(fit, x); }),
           mode: 'lines', type: 'scatter',
           name: _('traceTrend'),
           line: { color: 'rgba(200,200,200,0.6)', dash: 'solid', width: 2 },
@@ -183,7 +172,7 @@
       if (proj.some(Boolean)) {
         traces.push({
           x: xs.filter(function (_, i) { return proj[i]; }).map(function (x) { return fromOrd(x); }),
-          y: xs.filter(function (_, i) { return proj[i]; }).map(function (x) { return polyEval(coeffs, x); }),
+          y: xs.filter(function (_, i) { return proj[i]; }).map(function (x) { return expEval(fit, x); }),
           mode: 'lines', type: 'scatter',
           name: _('traceProj'),
           line: { color: 'rgba(255,100,100,0.5)', dash: 'dot', width: 2 },
