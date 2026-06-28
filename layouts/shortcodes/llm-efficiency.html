@@ -1,0 +1,22 @@
+<script src="https://cdn.jsdelivr.net/npm/plotly.js@2.35.2/dist/plotly.min.js"></script>
+<script src="/js/llm-efficiency.js" defer></script>
+<style>
+#llm-efficiency {
+  font-family: system-ui, -apple-system, sans-serif;
+  margin: 1.5rem 0;
+}
+#llm-efficiency .eff-controls {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(128,128,128,0.06);
+  border-radius: 8px;
+}
+#llm-efficiency .eff-chart {
+  margin-bottom: 2rem;
+}
+</style>
+<div id="llm-efficiency" data-src="/data/language_models_free_2026-06-27.json" data-lang="{{ .Page.Lang }}">
+  <div class="eff-controls" id="llm-efficiency-controls"></div>
+  <div class="eff-chart" id="llm-efficiency-chart1"></div>
+  <div class="eff-chart" id="llm-efficiency-chart2"></div>
+</div>
