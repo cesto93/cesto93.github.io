@@ -11,7 +11,7 @@ tags:
 translationKey: "efficiency-frontier"
 ---
 
-This post is a sort of sequel to llm_progress_analysis, still based on data from [Artificial Analysis](https://artificialanalysis.ai/).
+This post is a sort of sequel to [llm_progress_analysis]({{< relref "/en/posts/llm-progress-analysis" >}}), still based on data from [Artificial Analysis](https://artificialanalysis.ai/).
 Here I wanted to see the trend of the best model as it changes with the cost constraint.
 Note that cost is in millions of tokens per dollar, not based on benchmark cost, because I don't have that metric :(.
 As in the other post, we assume the exponential sequence.
@@ -20,7 +20,7 @@ What's different from the other post? Well, there we weren't watching the budget
 {{< llm-efficiency >}}
 
 Looking at the trend we can see that this second claim is true!
-By waiting, you will definitely get more intelligence (on this benchmark) than in the past.
+As the months go by, you will definitely get more intelligence (on this benchmark) than in the past.
 This is significant even if limited to a single benchmark — it's possible that in the future we'll have models useful for coding locally without spending exorbitant amounts.
 I think this would certainly have economic implications for the big American AI companies.
 
@@ -31,10 +31,10 @@ Now let's try to figure out today, if I didn't have opencode's generous free tie
 Suppose I want an intelligence level of about 50 — for now that's GLM 5.2 (I'm probably getting worse on the free tier).
 
 We can see with the slider that we're around $3/M tokens.
-20*3*1 = 60 euros per month, a sustainable amount for an average company.
+20 days × $3/M tokens × 1M tokens = €60 per month, a sustainable amount for an average company.
 
 If instead we go down to 45, we have DeepSeek v4-pro costing around $1/M tokens.
-20*1*1 = 20 euros per month — this is sustainable for any company and even for a casual developer.
+20 days × $1/M tokens × 1M tokens = €20 per month — sustainable for any company and even for a casual developer.
 
 According to the exponential projection, by September a model with the same score of 60 as Claude Fable would come out at this price.
 Though it seems unlikely to say today, a new version of DeepSeekV4.1 would probably have the same cost and a similar score. This would poach many users from American closed AI companies.
