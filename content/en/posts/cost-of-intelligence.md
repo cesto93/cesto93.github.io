@@ -11,7 +11,7 @@ tags:
 translationKey: "efficiency-frontier"
 ---
 
-This post is a sort of sequel to [llm_progress_analysis]({{< relref "/en/posts/llm-progress-analysis" >}}), still based on data from [Artificial Analysis](https://artificialanalysis.ai/).
+This post is a sort of sequel to [llm_progress_analysis]({{< relref "/posts/llm-progress-analysis" >}}), still based on data from [Artificial Analysis](https://artificialanalysis.ai/).
 Here I wanted to see the trend of the best model as it changes with the cost constraint.
 Note that cost is in millions of tokens per dollar, not based on benchmark cost, because I don't have that metric :(.
 As in the other post, we assume the exponential sequence.

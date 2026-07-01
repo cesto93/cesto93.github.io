@@ -170,8 +170,8 @@
     const xEnd = Math.max(xMax + sixMonthsDays, nowOrd);
 
     Plotly.newPlot('llm-open-frontier-chart', traces, {
-      height: 550,
-      margin: { t: 50, r: 120, b: 60, l: 60 },
+      height: 750,
+      margin: { t: 40, r: 30, b: 50, l: 50 },
       paper_bgcolor: bg,
       plot_bgcolor: bg,
       font: { color: fmt() },

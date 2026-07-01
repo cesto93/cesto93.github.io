@@ -11,7 +11,7 @@ tags:
 translationKey: "efficiency-frontier"
 ---
 
-Questo post è una sorta di sequel di [progressi_llm]({{< relref "/it/posts/progressi_llm" >}}), basato sempre sui dati di [Artificial Analysis](https://artificialanalysis.ai/).
+Questo post è una sorta di sequel di [progressi_llm]({{< relref "/posts/progressi_llm" >}}), basato sempre sui dati di [Artificial Analysis](https://artificialanalysis.ai/).
 Qui volevo vedere il trend del modello migliore come cambia al vincolo del costo.
 Nota: il costo è in milioni di token al dollaro, non in base al costo del benchmark, perché non ho questa metrica :(.
 Come nell'altro post supponiamo la sequenza esponenziale.

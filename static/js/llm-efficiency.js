@@ -187,8 +187,8 @@
 
     container.innerHTML = '';
     Plotly.newPlot(container, traces, {
-      height: 500,
-      margin: { t: 50, r: 120, b: 60, l: 60 },
+      height: 750,
+      margin: { t: 40, r: 30, b: 50, l: 50 },
       paper_bgcolor: bg, plot_bgcolor: bg,
       font: { color: fmt() },
       hovermode: 'closest',
