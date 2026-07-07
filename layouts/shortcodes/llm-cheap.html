@@ -1,0 +1,22 @@
+<script src="https://cdn.jsdelivr.net/npm/plotly.js@2.35.2/dist/plotly.min.js"></script>
+<script src="/js/llm-cheap.js" defer></script>
+<style>
+#llm-cheap {
+  font-family: system-ui, -apple-system, sans-serif;
+  margin: 1.5rem 0;
+}
+#llm-cheap .cheap-controls {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(128,128,128,0.06);
+  border-radius: 8px;
+}
+#llm-cheap .cheap-chart {
+  margin-bottom: 2rem;
+}
+</style>
+<div id="llm-cheap" data-src="/data/language_models_free_2026-06-27.json" data-lang="{{ .Page.Lang }}">
+  <div class="cheap-controls" id="llm-cheap-controls"></div>
+  <div class="cheap-chart" id="llm-cheap-chart1"></div>
+  <div class="cheap-chart" id="llm-cheap-chart2"></div>
+</div>
