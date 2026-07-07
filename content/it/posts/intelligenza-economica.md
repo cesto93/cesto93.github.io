@@ -17,7 +17,9 @@ Il post precedente mostrava che il trend dei modelli economici che diventano pi�
 
 A questo prezzo si parla di circa $2-40 al mese per un utilizzo tipico di coding (1M token/giorno, 20 giorni lavorativi). È la differenza tra «fammi provare questa IA» e «questa è una parte regolare del mio lavoro».
 
-{{< llm-cheap >}}
+{{< llm-cheap-task >}}
+
+{{< llm-task-cost >}}
 
 A $1/M token abbiamo già modelli con un indice di intelligenza sopra 50 — genuinamente utili per assistenza al coding, refactoring e Q&A tecnico. Con il trend esponenziale, è probabile che l'intelligenza di frontiera si riversi in questa fascia entro pochi mesi.
 

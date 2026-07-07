@@ -1,19 +1,17 @@
 (function () {
   'use strict';
 
-  const root = document.getElementById('llm-cheap');
+  const root = document.getElementById('llm-cheap-task');
   if (!root) return;
 
-  const chart1 = document.getElementById('llm-cheap-chart1');
-  const chart2 = document.getElementById('llm-cheap-chart2');
-  const controls = document.getElementById('llm-cheap-controls');
+  const chart1 = document.getElementById('llm-cheap-task-chart1');
+  const controls = document.getElementById('llm-cheap-task-controls');
 
   const lang = root.dataset.lang === 'it' ? 'it' : 'en';
 
   const i18n = {
-    maxPrice:      { en: 'Max avg price ($ / 1M tokens):', it: 'Prezzo medio max ($ / 1M token):' },
-    frontierTitle: { en: 'Most Intelligent Model Under ${price} / 1M Tokens', it: 'Modello pi\u00f9 intelligente sotto ${price} / 1M token' },
-    owTitle:       { en: 'Most Intelligent Open-Weight Model Under ${price} / 1M Tokens', it: 'Modello open-weight pi\u00f9 intelligente sotto ${price} / 1M token' },
+    maxCost:       { en: 'Max cost per task ($):', it: 'Costo massimo per task ($):' },
+    frontierTitle: { en: 'Most Intelligent Model Under $${cost} / Task', it: 'Modello pi\u00f9 intelligente sotto $${cost} / task' },
     noData:        { en: 'No data available for the selected filters.', it: 'Nessun dato disponibile per i filtri selezionati.' },
     traceOthers:   { en: 'Other models', it: 'Altri modelli' },
     traceFrontier: { en: 'Frontier models', it: 'Modelli frontiera' },
@@ -80,28 +78,24 @@
   // --------------- state ---------------
   let allData = [];
 
-  const CLOSED = new Set(['OpenAI', 'Anthropic', 'Google']);
-
   // --------------- controls ---------------
   function buildControls() {
     controls.innerHTML =
-      '<label>' + _('maxPrice') + ' <strong id="cheap-price-label">$1.00</strong></label>' +
-      '<input type="range" id="cheap-price" min="0.1" max="2.0" step="0.1" value="1" style="width:100%">';
+      '<label>' + _('maxCost') + ' <strong id="cheap-task-price-label">$0.50</strong></label>' +
+      '<input type="range" id="cheap-task-price" min="0" max="3" step="0.05" value="0.5" style="width:100%">';
 
-    document.getElementById('cheap-price').addEventListener('input', function () {
-      document.getElementById('cheap-price-label').textContent = '$' + parseFloat(this.value).toFixed(2);
+    document.getElementById('cheap-task-price').addEventListener('input', function () {
+      document.getElementById('cheap-task-price-label').textContent = '$' + parseFloat(this.value).toFixed(2);
       update();
     });
   }
 
   function update() {
-    var maxPrice = +document.getElementById('cheap-price').value;
+    var maxCost = +document.getElementById('cheap-task-price').value;
     var filtered = allData.filter(function (d) {
-      return d.avgPrice < maxPrice;
+      return d.costPerTask != null && d.costPerTask <= maxCost;
     });
-    renderChart(chart1, filtered, _('frontierTitle').replace('${price}', maxPrice.toFixed(1)));
-    var ow = filtered.filter(function (d) { return !CLOSED.has(d.creator); });
-    renderChart(chart2, ow, _('owTitle').replace('${price}', maxPrice.toFixed(1)));
+    renderChart(chart1, filtered, _('frontierTitle').replace('${cost}', maxCost.toFixed(2)));
   }
 
   // --------------- chart rendering ---------------
@@ -219,19 +213,18 @@
       .then(function (raw) {
         allData = raw.data.map(function (m) {
           var rd = m.release_date ? new Date(m.release_date) : null;
-          var pi = m.pricing ? m.pricing.price_1m_input_tokens : null;
-          var po = m.pricing ? m.pricing.price_1m_output_tokens : null;
-          var avg = pi != null && po != null ? (pi + po) / 2 : null;
+          var costData = m.artificial_analysis_intelligence_index_cost;
+          var cpt = costData && costData.cost_per_task ? costData.cost_per_task.total_cost : null;
           return {
             cleanName: m.name.replace(/\s*\(.*?\)/g, '').trim(),
             creator: m.model_creator ? m.model_creator.name : 'Unknown',
             releaseDate: rd,
             releaseOrd: rd ? toOrd(rd) : null,
             intelligenceIndex: m.evaluations ? m.evaluations.artificial_analysis_intelligence_index : null,
-            avgPrice: avg,
+            costPerTask: cpt,
           };
         }).filter(function (d) {
-          return d.releaseOrd != null && d.intelligenceIndex != null && d.avgPrice != null && d.avgPrice > 0;
+          return d.releaseOrd != null && d.intelligenceIndex != null && d.costPerTask != null && d.costPerTask >= 0;
         });
 
         buildControls();
