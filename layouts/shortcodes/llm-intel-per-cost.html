@@ -1,0 +1,17 @@
+<script src="https://cdn.jsdelivr.net/npm/plotly.js@2.35.2/dist/plotly.min.js"></script>
+<script src="/js/llm-intel-per-cost.js" defer></script>
+<style>
+#llm-intel-per-cost {
+  font-family: system-ui, -apple-system, sans-serif;
+  margin: 1.5rem 0;
+}
+#llm-intel-per-cost .intel-per-cost-status {
+  margin-bottom: 0.5rem;
+  font-size: 0.9em;
+  opacity: 0.7;
+}
+</style>
+<div id="llm-intel-per-cost" data-src="/data/language_models_free_2026-06-27.json" data-lang="{{ .Page.Lang }}">
+  <div class="intel-per-cost-status" id="llm-intel-per-cost-status"></div>
+  <div id="llm-intel-per-cost-chart"></div>
+</div>

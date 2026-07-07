@@ -19,7 +19,7 @@ A questo prezzo si parla di circa $2-40 al mese per un utilizzo tipico di coding
 
 {{< llm-cheap-task >}}
 
-{{< llm-task-cost >}}
+{{< llm-intel-per-cost >}}
 
 A $1/M token abbiamo già modelli con un indice di intelligenza sopra 50 — genuinamente utili per assistenza al coding, refactoring e Q&A tecnico. Con il trend esponenziale, è probabile che l'intelligenza di frontiera si riversi in questa fascia entro pochi mesi.
 
