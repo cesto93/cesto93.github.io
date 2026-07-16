@@ -17,7 +17,7 @@ The previous post showed that the trend of cheap models getting smarter is real.
 
 At this price point you're looking at about $2-40 per month for typical coding usage (1M tokens/day, 20 working days). That's the difference between "let me try this AI" and "this is a regular part of my workflow."
 
-{{< llm-cheap >}}
+{{< llm-cheap-task >}}
 
 At $1/M tokens we already have models with an intelligence index above 50 — that's genuinely useful for coding assistance, refactoring, and technical Q&A. As the exponential trend plays out, we'll likely see frontier-level intelligence trickle down into this bracket within months.
 

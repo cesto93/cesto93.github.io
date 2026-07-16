@@ -1,90 +1,76 @@
 (function () {
   'use strict';
 
-  const root = document.getElementById('llm-intel-per-cost');
+  var root = document.getElementById('llm-intel-per-cost');
   if (!root) return;
 
-  const chart = document.getElementById('llm-intel-per-cost-chart');
-  const status = document.getElementById('llm-intel-per-cost-status');
+  var chart = document.getElementById('llm-intel-per-cost-chart');
+  var status = document.getElementById('llm-intel-per-cost-status');
 
-  const lang = root.dataset.lang === 'it' ? 'it' : 'en';
+  var lang = root.dataset.lang === 'it' ? 'it' : 'en';
 
-  const i18n = {
-    title:     { en: 'Intelligence per Dollar over Time', it: 'Intelligenza per dollaro nel tempo' },
-    yLabel:    { en: 'Intelligence index / Cost per task ($)', it: 'Indice di intelligenza / Costo per task ($)' },
-    noData:    { en: 'No data available.', it: 'Nessun dato disponibile.' },
-    loadError: { en: 'Failed to load data:', it: 'Caricamento dati fallito:' },
-    traceFrontier: { en: 'Frontier', it: 'Frontiera' },
-    traceOthers:   { en: 'Other models', it: 'Altri modelli' },
-    traceTrend:    { en: 'Exp trend', it: 'Trend esponenziale' },
-    traceProj:     { en: 'Projected 6 months', it: 'Proiezione 6 mesi' },
-    axisRelease:   { en: 'Release date', it: 'Data di rilascio' },
+  var i18n = {
+    title:        { en: 'Intelligence vs Cost', it: 'Intelligenza vs Costo' },
+    xLabel:       { en: 'Cost per task ($)', it: 'Costo per task ($)' },
+    yLabel:       { en: 'Intelligence Index', it: 'Indice di Intelligenza' },
+    noData:       { en: 'No data available.', it: 'Nessun dato disponibile.' },
+    loadError:    { en: 'Failed to load data:', it: 'Caricamento dati fallito:' },
+    sweetSpot:    { en: '★ Sweet Spot', it: '★ Zona ideale' },
   };
 
   function _(key) { return i18n[key][lang]; }
 
-  const isDark = () =>
-    document.documentElement.dataset.theme !== 'light' &&
-    (document.documentElement.dataset.theme === 'dark' ||
-      window.matchMedia('(prefers-color-scheme: dark)').matches);
+  var isDark = function () {
+    return document.documentElement.dataset.theme !== 'light' &&
+      (document.documentElement.dataset.theme === 'dark' ||
+        window.matchMedia('(prefers-color-scheme: dark)').matches);
+  };
 
-  const fmt = () => (isDark() ? '#ddd' : '#333');
-  const bg = 'rgba(0,0,0,0)';
+  var fmt = function () { return isDark() ? '#ddd' : '#333'; };
+  var bg = 'rgba(0,0,0,0)';
 
-  const EPOCH_ORD = 719163;
+  // --------------- quarter color palette ---------------
+  // Chronological gradient: cool → warm (oldest → newest)
+  var QUARTER_COLORS = [
+    '#9ecae1', // Q oldest — light blue
+    '#6baed6', // — medium blue
+    '#4292c6', // — stronger blue
+    '#2171b5', // — deep blue
+    '#fd8d3c', // — orange
+    '#e6550d', // — dark orange
+    '#a63603', // — burnt orange / brown
+    '#7a0177', // — magenta (newest)
+  ];
 
-  function toOrd(d) {
-    return Math.floor(d.getTime() / 86400000) + EPOCH_ORD;
-  }
-  function fromOrd(ord) {
-    return new Date((ord - EPOCH_ORD) * 86400000);
-  }
-
-  // --------------- exponential fit ---------------
-  function expFit(x, y) {
-    const n = x.length;
-    const xMin = Math.min.apply(null, x);
-    const xShifted = x.map(function (v) { return v - xMin; });
-    const logY = y.map(function (v) { return Math.log(v); });
-    var xMean = xShifted.reduce(function (a, b) { return a + b; }, 0) / n;
-    var yMean = logY.reduce(function (a, b) { return a + b; }, 0) / n;
-    var num = 0, den = 0;
-    for (var i = 0; i < n; i++) {
-      num += (xShifted[i] - xMean) * (logY[i] - yMean);
-      den += (xShifted[i] - xMean) * (xShifted[i] - xMean);
-    }
-    var b = num / den;
-    var logA = yMean - b * xMean;
-    return { a: Math.exp(logA), b: b, xMin: xMin };
+  // --------------- quarter helpers ---------------
+  function quarterKey(date) {
+    var y = date.getFullYear();
+    var q = Math.floor(date.getMonth() / 3) + 1;
+    return y + ' Q' + q;
   }
 
-  function expEval(fit, x) {
-    return fit.a * Math.exp(fit.b * (x - fit.xMin));
+  function quarterSortKey(date) {
+    return date.getFullYear() * 4 + Math.floor(date.getMonth() / 3);
   }
 
-  function computeFrontier(data) {
-    const sorted = [...data].sort((a, b) => a.releaseOrd - b.releaseOrd);
-    let maxSoFar = -1;
-    return sorted.filter(d => {
-      if (d.intelPerCost > maxSoFar) {
-        maxSoFar = d.intelPerCost;
-        return true;
-      }
-      return false;
+  // --------------- Pareto frontier (cost/intel) ---------------
+  function computePareto(data) {
+    return data.filter(function (d) {
+      return !data.some(function (o) {
+        return o !== d && o.costPerTask <= d.costPerTask && o.intelIndex >= d.intelIndex &&
+          (o.costPerTask < d.costPerTask || o.intelIndex > d.intelIndex);
+      });
     });
   }
 
-  // --------------- palette ---------------
-  var COLOR_MAP = {};
-  var PALETTE = [
-    '#4e79a7','#f28e2b','#e15759','#76b7b2','#59a14f','#edc948',
-    '#b07aa1','#ff9da7','#9c755f','#bab0ac','#86bcb6','#8cd17d',
-    '#b6992d','#499894','#d37295','#f1ce63','#a0cbe8','#ffbe7d',
-  ];
-  var colorIdx = 0;
-  function creatorColor(name) {
-    if (!COLOR_MAP[name]) COLOR_MAP[name] = PALETTE[colorIdx++ % PALETTE.length];
-    return COLOR_MAP[name];
+  // --------------- bubble size scaling ---------------
+  function scaleSizes(values, minR, maxR) {
+    var lo = Math.min.apply(null, values);
+    var hi = Math.max.apply(null, values);
+    var range = hi - lo || 1;
+    return values.map(function (v) {
+      return minR + (maxR - minR) * Math.sqrt((v - lo) / range);
+    });
   }
 
   // --------------- bootstrap ---------------
@@ -109,10 +95,11 @@
             name: m.name.replace(/\s*\(.*?\)/g, '').trim(),
             creator: m.model_creator ? m.model_creator.name : 'Unknown',
             releaseDate: rd,
-            releaseOrd: toOrd(rd),
             intelIndex: idx,
             costPerTask: cpt,
             intelPerCost: idx / cpt,
+            qKey: quarterKey(rd),
+            qSort: quarterSortKey(rd),
           });
         });
 
@@ -123,77 +110,129 @@
 
         status.textContent = points.length + ' ' + (lang === 'it' ? 'modelli' : 'models');
 
-        var frontier = computeFrontier(points);
+        var frontier = computePareto(points);
+        var frontierSet = new Set(frontier.map(function (d) { return d.name; }));
+
+        // Group by quarter, preserving chronological order
+        var quarters = [];
+        var qMap = {};
+        points.forEach(function (d) {
+          if (!qMap[d.qKey]) {
+            qMap[d.qKey] = { key: d.qKey, sort: d.qSort, points: [] };
+            quarters.push(qMap[d.qKey]);
+          }
+          qMap[d.qKey].points.push(d);
+        });
+        quarters.sort(function (a, b) { return a.sort - b.sort; });
+
+        var allSizes = scaleSizes(points.map(function (d) { return d.intelPerCost; }), 8, 60);
+        var sizeMap = {};
+        points.forEach(function (d, i) { sizeMap[d.name] = allSizes[i]; });
+
         var traces = [];
 
-        if (frontier.length) {
-          traces.push({
-            x: frontier.map(function (d) { return d.releaseDate; }),
-            y: frontier.map(function (d) { return d.intelPerCost; }),
-            text: frontier.map(function (d) { return d.name; }),
-            customdata: frontier.map(function (d) { return [d.creator, d.intelIndex, d.costPerTask]; }),
-            mode: 'markers+text', type: 'scatter',
-            name: _('traceFrontier'),
-            marker: { size: 10, color: frontier.map(function (d) { return creatorColor(d.creator); }) },
-            textposition: 'top center',
-            hovertemplate: '%{text}<br>%{customdata[0]}<br>Intel: %{customdata[1]}<br>Cost/task: $%{customdata[2]:.4f}<br>Intel/$: %{y:.1f}<extra></extra>',
-          });
-        }
+        quarters.forEach(function (q, qi) {
+          var color = QUARTER_COLORS[qi % QUARTER_COLORS.length];
+          var frontInQ = q.points.filter(function (d) { return frontierSet.has(d.name); });
+          var otherInQ = q.points.filter(function (d) { return !frontierSet.has(d.name); });
 
-        if (frontier.length >= 4) {
-          var xOrd = frontier.map(function (d) { return d.releaseOrd; });
-          var y = frontier.map(function (d) { return d.intelPerCost; });
-          var fit = expFit(xOrd, y);
-          var yPred = xOrd.map(function (x) { return expEval(fit, x); });
-          var yMean = y.reduce(function (a, b) { return a + b; }, 0) / y.length;
-          var ssRes = y.reduce(function (s, yi, i) { return s + (yi - yPred[i]) * (yi - yPred[i]); }, 0);
-          var ssTot = y.reduce(function (s, yi) { return s + (yi - yMean) * (yi - yMean); }, 0);
-          var r2 = 1 - ssRes / ssTot;
-
-          var sixMonths = 183;
-          var xMax = Math.max.apply(null, xOrd);
-          var xs = Array.from({ length: 300 }, function (_, i) {
-            return xOrd[0] + (xMax + sixMonths - xOrd[0]) * i / 299;
-          });
-          var hist = xs.map(function (x) { return x <= xMax; });
-          var proj = xs.map(function (x) { return x > xMax; });
-
-          if (hist.some(Boolean)) {
+          // Non-frontier first (behind)
+          if (otherInQ.length) {
             traces.push({
-              x: xs.filter(function (_, i) { return hist[i]; }).map(function (x) { return fromOrd(x); }),
-              y: xs.filter(function (_, i) { return hist[i]; }).map(function (x) { return expEval(fit, x); }),
-              mode: 'lines', type: 'scatter',
-              name: _('traceTrend'),
-              line: { color: 'rgba(200,200,200,0.6)', dash: 'solid', width: 2 },
+              x: otherInQ.map(function (d) { return d.costPerTask; }),
+              y: otherInQ.map(function (d) { return d.intelIndex; }),
+              text: otherInQ.map(function (d) { return d.name; }),
+              customdata: otherInQ.map(function (d) {
+                return [d.creator, d.intelIndex, d.costPerTask, d.intelPerCost];
+              }),
+              mode: 'markers', type: 'scatter',
+              name: q.key,
+              legendgroup: q.key,
+              showlegend: false,
+              marker: {
+                size: otherInQ.map(function (d) { return sizeMap[d.name]; }),
+                color: color,
+                opacity: 0.4,
+                line: { width: 0 },
+              },
+              hovertemplate: '%{text}<br>%{customdata[0]}<br>Intel: %{customdata[1]}<br>Cost/task: $%{customdata[2]:.4f}<br>Intel/$: %{customdata[3]:.1f}<extra></extra>',
             });
           }
-          if (proj.some(Boolean)) {
+
+          // Frontier on top
+          if (frontInQ.length) {
             traces.push({
-              x: xs.filter(function (_, i) { return proj[i]; }).map(function (x) { return fromOrd(x); }),
-              y: xs.filter(function (_, i) { return proj[i]; }).map(function (x) { return expEval(fit, x); }),
-              mode: 'lines', type: 'scatter',
-              name: _('traceProj'),
-              line: { color: 'rgba(255,100,100,0.5)', dash: 'dot', width: 2 },
+              x: frontInQ.map(function (d) { return d.costPerTask; }),
+              y: frontInQ.map(function (d) { return d.intelIndex; }),
+              text: frontInQ.map(function (d) { return d.name; }),
+              customdata: frontInQ.map(function (d) {
+                return [d.creator, d.intelIndex, d.costPerTask, d.intelPerCost];
+              }),
+              mode: 'markers', type: 'scatter',
+              name: q.key,
+              legendgroup: q.key,
+              showlegend: true,
+              marker: {
+                size: frontInQ.map(function (d) { return sizeMap[d.name]; }),
+                color: color,
+                opacity: 0.85,
+                line: { width: 2, color: isDark() ? '#fff' : '#222' },
+              },
+              hovertemplate: '%{text}<br>%{customdata[0]}<br>Intel: %{customdata[1]}<br>Cost/task: $%{customdata[2]:.4f}<br>Intel/$: %{customdata[3]:.1f}<extra></extra>',
             });
           }
-        }
+        });
 
-        var nowOrd = Math.floor(Date.now() / 86400000) + EPOCH_ORD;
-        var allX = points.map(function (d) { return d.releaseOrd; });
-        var xMin = Math.min.apply(null, allX);
-        var xMax = Math.max.apply(null, allX);
+        // Sweet spot zone
+        var xVals = points.map(function (d) { return d.costPerTask; });
+        var yVals = points.map(function (d) { return d.intelIndex; });
+        var xLogMin = Math.log10(Math.min.apply(null, xVals));
+        var xLogMax = Math.log10(Math.max.apply(null, xVals));
+        var yMax = Math.max.apply(null, yVals);
+        var sweetX = Math.pow(10, xLogMin + (xLogMax - xLogMin) * 0.15);
+        var sweetY = yMax * 0.85;
 
         chart.innerHTML = '';
         Plotly.newPlot(chart, traces, {
-          height: 750,
-          margin: { t: 40, r: 20, b: 50, l: 70 },
+          height: 650,
+          margin: { t: 50, r: 30, b: 60, l: 70 },
           paper_bgcolor: bg, plot_bgcolor: bg,
           font: { color: fmt() },
           hovermode: 'closest',
-          legend: { orientation: 'h', y: -0.25 },
-          title: { text: _('title') },
-          xaxis: { title: _('axisRelease'), range: [fromOrd(xMin), fromOrd(Math.max(xMax + 183, nowOrd))] },
-          yaxis: { title: _('yLabel'), type: 'log' },
+          legend: { orientation: 'h', y: -0.18, title: { text: lang === 'it' ? 'Periodo' : 'Period' } },
+          title: { text: _('title'), y: 0.97 },
+          xaxis: {
+            title: _('xLabel'),
+            type: 'log',
+            gridcolor: isDark() ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+          },
+          yaxis: {
+            title: _('yLabel'),
+            gridcolor: isDark() ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+          },
+          shapes: [
+            {
+              type: 'rect',
+              xref: 'x', yref: 'y',
+              x0: Math.pow(10, xLogMin), x1: sweetX,
+              y0: sweetY, y1: yMax * 1.05,
+              fillcolor: isDark() ? 'rgba(100,220,130,0.06)' : 'rgba(50,180,80,0.06)',
+              line: { width: 0 },
+            },
+          ],
+          annotations: [
+            {
+              x: Math.log10(sweetX) * 0.6 + Math.log10(Math.pow(10, xLogMin)) * 0.4,
+              y: sweetY + (yMax * 1.05 - sweetY) * 0.5,
+              xref: 'x', yref: 'y',
+              text: _('sweetSpot'),
+              showarrow: false,
+              font: {
+                size: 13,
+                color: isDark() ? 'rgba(100,220,130,0.5)' : 'rgba(50,150,80,0.45)',
+              },
+            },
+          ],
         }, { responsive: true, displayModeBar: false });
       })
       .catch(function (err) {
