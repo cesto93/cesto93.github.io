@@ -42,11 +42,13 @@ analysis/                    # Python project (uv, Python 3.13)
   streamlit_app.py           #   optional local Streamlit dashboard
   .env.example               #   needs ARTIFICIAL_ANALYSIS_KEY
 static/data/                 # checked-in JSON consumed by shortcodes
-layouts/shortcodes/          # llm-dashboard, llm-open-dashboard, llm-efficiency
+layouts/shortcodes/          # llm-dashboard, llm-open-dashboard, llm-efficiency, llm-cheap-task, llm-intel-per-cost
 static/js/                   # companion JS for each shortcode
 ```
 
-To update data: add API key, run `uv run fetch_data.py`, copy relevant JSON to `static/data/` with date-stamped filename matching the shortcode's `data-src`.
+Each shortcode reads `data-max-date` from its container (set via `{{ .Page.Date.Format "2006-01-02" }}`) and filters out models with `release_date` after that date. This keeps old posts stable while new posts show latest data.
+
+To update data: add API key, run `uv run fetch_data.py`, copy `analysis/data/language_models_free.json` to `static/data/` with a new date-stamped filename, and update `data-src` in all 5 shortcode HTML files + JS fallbacks.
 
 ## Layout quirks
 

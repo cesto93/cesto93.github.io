@@ -214,10 +214,11 @@
 
   // --------------- bootstrap ---------------
   function init() {
-    fetch(root.dataset.src || '/data/language_models_free_2026-06-27.json')
+    fetch(root.dataset.src || '/data/language_models_free_2026-07-18.json')
       .then(function (r) { return r.json(); })
       .then(function (raw) {
-        allData = raw.data.map(function (m) {
+        var maxDate = root.dataset.maxDate;
+        allData = raw.data.filter(function(m) { return !maxDate || !m.release_date || m.release_date <= maxDate; }).map(function (m) {
           var rd = m.release_date ? new Date(m.release_date) : null;
           var pi = m.pricing ? m.pricing.price_1m_input_tokens : null;
           var po = m.pricing ? m.pricing.price_1m_output_tokens : null;

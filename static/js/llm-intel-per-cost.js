@@ -75,12 +75,13 @@
 
   // --------------- bootstrap ---------------
   function init() {
-    fetch(root.dataset.src || '/data/language_models_free_2026-06-27.json')
+    fetch(root.dataset.src || '/data/language_models_free_2026-07-18.json')
       .then(function (r) { return r.json(); })
       .then(function (raw) {
         var points = [];
 
-        raw.data.forEach(function (m) {
+        var maxDate = root.dataset.maxDate;
+        raw.data.filter(function(m) { return !maxDate || !m.release_date || m.release_date <= maxDate; }).forEach(function (m) {
           var rd = m.release_date ? new Date(m.release_date) : null;
           if (!rd) return;
 

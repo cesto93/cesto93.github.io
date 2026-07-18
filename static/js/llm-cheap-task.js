@@ -208,10 +208,11 @@
 
   // --------------- bootstrap ---------------
   function init() {
-    fetch(root.dataset.src || '/data/language_models_free_2026-06-27.json')
+    fetch(root.dataset.src || '/data/language_models_free_2026-07-18.json')
       .then(function (r) { return r.json(); })
       .then(function (raw) {
-        allData = raw.data.map(function (m) {
+        var maxDate = root.dataset.maxDate;
+        allData = raw.data.filter(function(m) { return !maxDate || !m.release_date || m.release_date <= maxDate; }).map(function (m) {
           var rd = m.release_date ? new Date(m.release_date) : null;
           var costData = m.artificial_analysis_intelligence_index_cost;
           var cpt = costData && costData.cost_per_task ? costData.cost_per_task.total_cost : null;

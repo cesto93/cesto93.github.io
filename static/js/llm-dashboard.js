@@ -41,10 +41,11 @@
   }
 
   function init() {
-    fetch(root.dataset.src || '/data/language_models_free_2026-06-27.json')
+    fetch(root.dataset.src || '/data/language_models_free_2026-07-18.json')
       .then(r => r.json())
       .then(raw => {
-        const data = raw.data.map(m => {
+        const maxDate = root.dataset.maxDate;
+        const data = raw.data.filter(m => !maxDate || !m.release_date || m.release_date <= maxDate).map(m => {
           const rd = m.release_date ? new Date(m.release_date) : null;
           return {
             cleanName: m.name.replace(/\s*\(.*?\)/g, '').trim(),
