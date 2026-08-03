@@ -63,7 +63,7 @@ fig1 = px.scatter(
     trendline="ols",
     trendline_color_override="rgba(200,200,200,0.4)",
 )
-st.plotly_chart(fig1, use_container_width=True)
+st.plotly_chart(fig1, width="stretch")
 
 # --------------- SCATTER: Speed vs Intelligence ---------------
 st.subheader("Output Speed vs. Intelligence")
@@ -80,7 +80,7 @@ fig2 = px.scatter(
     trendline="ols",
     trendline_color_override="rgba(200,200,200,0.4)",
 )
-st.plotly_chart(fig2, use_container_width=True)
+st.plotly_chart(fig2, width="stretch")
 
 # --------------- TOP MODELS ---------------
 st.subheader("Top 20 Models by Intelligence Index")
@@ -97,6 +97,6 @@ fig3 = px.bar(
     },
 )
 fig3.update_layout(yaxis={"categoryorder": "total ascending"})
-st.plotly_chart(fig3, use_container_width=True)
+st.plotly_chart(fig3, width="stretch")
 
 

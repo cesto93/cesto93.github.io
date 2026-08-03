@@ -97,7 +97,7 @@ def build_frontier_chart(data, title, color_by="creator"):
             ]
         ),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def compute_frontier(data):

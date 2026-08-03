@@ -17,4 +17,4 @@ filtered = df[df["creator"].isin(selected_creators)]
 
 # --------------- DATA TABLE ---------------
 st.title("Data Explorer")
-st.dataframe(filtered, use_container_width=True, hide_index=True)
+st.dataframe(filtered, width="stretch", hide_index=True)
