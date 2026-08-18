@@ -39,6 +39,11 @@ def load_data() -> pd.DataFrame:
                 "e2e_response_s": m["performance"].get(
                     "median_end_to_end_response_time_seconds"
                 ),
+                "cost_per_task": (
+                    (m.get("artificial_analysis_intelligence_index_cost") or {})
+                    .get("cost_per_task", {})
+                    .get("total_cost")
+                ),
             }
         )
     df = pd.DataFrame(rows)
