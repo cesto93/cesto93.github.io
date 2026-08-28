@@ -1,5 +1,6 @@
 import plotly.express as px
 import streamlit as st
+import pandas as pd
 
 from utils import load_data
 
@@ -9,7 +10,13 @@ df = load_data()
 
 # --------------- SIDEBAR ---------------
 st.sidebar.title("Filters")
-creators = sorted(df["creator"].dropna().unique())
+
+# Filter to last 6 months by default
+six_months_ago = pd.Timestamp.now() - pd.DateOffset(months=6)
+has_release_date = df["release_date"].notna()
+recent_df = df[has_release_date & (df["release_date"] >= six_months_ago)].copy()
+
+creators = sorted(recent_df["creator"].dropna().unique())
 default_creators = [c for c in creators if c in {
     "Alibaba", "Anthropic", "DeepSeek", "Google", "Z AI",
     "Kimi", "Meta", "MiniMax", "Mistral", "NVIDIA", "OpenAI", "Xiaomi",
@@ -20,13 +27,13 @@ selected_creators = st.sidebar.multiselect(
 intel_range = st.sidebar.slider(
     "Intelligence index range",
     min_value=0.0,
-    max_value=float(df["intelligence_index"].max()),
-    value=(0.0, float(df["intelligence_index"].max())),
+    max_value=float(recent_df["intelligence_index"].max()),
+    value=(0.0, float(recent_df["intelligence_index"].max())),
 )
 
-filtered = df[
-    (df["creator"].isin(selected_creators))
-    & (df["intelligence_index"].between(intel_range[0], intel_range[1]))
+filtered = recent_df[
+    (recent_df["creator"].isin(selected_creators))
+    & (recent_df["intelligence_index"].between(intel_range[0], intel_range[1]))
 ]
 
 # --------------- METRICS ---------------
