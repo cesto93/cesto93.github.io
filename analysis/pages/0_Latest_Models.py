@@ -38,6 +38,7 @@ filtered = recent_df[
 
 # --------------- METRICS ---------------
 st.title("🧠 Free Language Models — Artificial Analysis")
+st.caption(f"Showing models released in the last 6 months (since {six_months_ago.strftime('%B %Y')})")
 
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Total models", len(filtered))

@@ -96,7 +96,6 @@ else:
         color="metric",
         orientation="h",
         barmode="group",
-        log_x=True,
         labels={
             "value": "Value (log scale)",
             "clean_name": "",
@@ -127,7 +126,6 @@ else:
         line_color="green",
         annotation_text=f"intel ≥ {min_intel:.1f}",
     )
-    fig.update_xaxes(range=[None, 1])
     fig.update_layout(yaxis={"categoryorder": "total ascending"})
     st.plotly_chart(fig, width="stretch")
 
