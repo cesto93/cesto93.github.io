@@ -36,21 +36,21 @@ max_time_s = c1.slider(
     "Max time per task (s)",
     min_value=2,
     max_value=60,
-    value=15,
+    value=30,
     step=1,
 )
 max_cost = c2.slider(
     "Max cost per task ($)",
     min_value=0.0,
     max_value=3.0,
-    value=0.1,
+    value=0.50,
     step=0.01,
 )
 min_intel = c3.slider(
     "Required intelligence index",
     min_value=float(df["intelligence_index"].min()),
     max_value=float(df["intelligence_index"].max()),
-    value=30.0,
+    value=40.0,
     step=0.5,
 )
 
