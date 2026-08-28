@@ -3,7 +3,7 @@ import streamlit as st
 
 from utils import load_data
 
-st.set_page_config(layout="wide", page_title="Free Language Models Dashboard")
+st.set_page_config(layout="wide", page_title="Latest models")
 
 
 df = load_data()
