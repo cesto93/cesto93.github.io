@@ -19,10 +19,10 @@ df = df[df["avg_price"].notna() & (df["avg_price"] > 0)].copy()
 st.sidebar.title("Filters")
 max_price = st.sidebar.slider(
     "Max avg price ($ / 1M tokens)",
-    min_value=0.5,
-    max_value=20.0,
+    min_value=0.10,
+    max_value=5.0,
     value=3.0,
-    step=0.5,
+    step=0.10,
 )
 creators = sorted(df["creator"].dropna().unique())
 default_creators = [c for c in creators if c in {
