@@ -222,7 +222,7 @@
 
   // --------------- bootstrap ---------------
   function init() {
-    fetch(root.dataset.src || '/data/language_models_free_2026-07-18.json')
+    fetch(root.dataset.src || '/data/language_models_free_2026-10-14.json')
       .then(function (r) { return r.json(); })
       .then(function (raw) {
         var maxDate = root.dataset.maxDate;

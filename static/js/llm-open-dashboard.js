@@ -55,7 +55,7 @@
   }
 
   function init() {
-    fetch(root.dataset.src || '/data/language_models_free_2026-07-18.json')
+    fetch(root.dataset.src || '/data/language_models_free_2026-10-14.json')
       .then(r => r.json())
       .then(raw => {
         const maxDate = root.dataset.maxDate;
