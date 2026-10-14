@@ -8,8 +8,19 @@ from scipy.optimize import curve_fit
 from utils import load_data
 
 
-def exp_func(x, a, b):
-    return a * np.exp(b * x)
+def logistic_func(x, L, k, x0):
+    return L / (1 + np.exp(np.clip(-k * (x - x0), -500, 500)))
+
+
+def fit_logistic(x_shifted, y):
+    y_max = float(np.max(y))
+    upper_L = max(100.0, y_max * 1.5)
+    p0 = (y_max * 1.3, 0.005, float(np.median(x_shifted)))
+    bounds = (
+        (y_max, 0, 0),
+        (upper_L, 1.0, float(np.max(x_shifted)) + 3650),
+    )
+    return curve_fit(logistic_func, x_shifted, y, p0=p0, bounds=bounds, maxfev=20000)
 
 st.set_page_config(layout="wide", page_title="Frontier")
 
@@ -53,10 +64,14 @@ def build_frontier_chart(data, title, color_by="creator"):
     x_min = x_ord.min()
     x_shifted = x_ord - x_min
     y = data["intelligence_index"].values
-    popt, _ = curve_fit(exp_func, x_shifted, y, p0=(1, 0.001), maxfev=10000)
-    a_fit, b_fit = popt
+    try:
+        popt, _ = fit_logistic(x_shifted, y)
+    except (RuntimeError, ValueError):
+        st.info(f"Logistic fit did not converge for {title}.")
+        return
+    L_fit, k_fit, x0_fit = popt
 
-    y_pred = exp_func(x_shifted, a_fit, b_fit)
+    y_pred = logistic_func(x_shifted, L_fit, k_fit, x0_fit)
     ss_res = np.sum((y - y_pred) ** 2)
     ss_tot = np.sum((y - np.mean(y)) ** 2)
     r_squared = 1 - ss_res / ss_tot
@@ -71,14 +86,14 @@ def build_frontier_chart(data, title, color_by="creator"):
 
     fig.add_scatter(
         x=x_smooth_dates[hist_mask],
-        y=exp_func(x_smooth[hist_mask] - x_min, a_fit, b_fit),
+        y=logistic_func(x_smooth[hist_mask] - x_min, L_fit, k_fit, x0_fit),
         mode="lines",
-        name="Exp trend",
+        name="Logistic trend",
         line=dict(color="rgba(200,200,200,0.6)", dash="solid"),
     )
     fig.add_scatter(
         x=x_smooth_dates[proj_mask],
-        y=exp_func(x_smooth[proj_mask] - x_min, a_fit, b_fit),
+        y=logistic_func(x_smooth[proj_mask] - x_min, L_fit, k_fit, x0_fit),
         mode="lines",
         name="Projected 6 months",
         line=dict(color="rgba(255,100,100,0.5)", dash="dot"),
@@ -124,7 +139,7 @@ build_frontier_chart(frontier, "Most Intelligent Model Over Time")
 
 # --------------- OPEN-WEIGHT FRONTIER ---------------
 st.title("Open-Weight Frontier")
-CLOSED_CREATORS = {"OpenAI", "Anthropic", "Google"}
+CLOSED_CREATORS = {"OpenAI", "Anthropic", "Google", "xAI", "SpaceXAI"}
 is_muse_ow = filtered["name"].str.contains("Muse", case=False, na=False)
 ow_filtered = filtered[
     ~filtered["creator"].isin(CLOSED_CREATORS) & ~is_muse_ow
@@ -150,26 +165,40 @@ else:
 
     ow_x = ow_frontier["release_date"].map(pd.Timestamp.toordinal).astype(float)
     ow_x_min = ow_x.min()
-    ow_popt, _ = curve_fit(exp_func, ow_x - ow_x_min, ow_frontier["intelligence_index"], p0=(1, 0.001), maxfev=10000)
-    ow_a, ow_b = ow_popt
-
-    now_ord = pd.Timestamp.today().toordinal()
-    search_ord = np.linspace(now_ord, now_ord + 365 * 10, 5000)
-    search_vals = exp_func(search_ord - ow_x_min, ow_a, ow_b)
-    above = np.where(search_vals >= best_closed_val)[0]
-
-    if len(above) > 0:
-        catchup_ord = search_ord[above[0]]
-        catchup_date = pd.Timestamp.fromordinal(int(catchup_ord))
-        years_from_now = (catchup_ord - now_ord) / 365.0
-        st.success(
-            f"Open-weight models are predicted to reach **{best_closed_name}**'s "
-            f"intelligence index of **{best_closed_val:.1f}** by "
-            f"**{catchup_date.date()}** "
-            f"({years_from_now:.1f} years from now)."
+    try:
+        ow_popt, _ = fit_logistic(
+            ow_x - ow_x_min, ow_frontier["intelligence_index"].values
         )
+    except (RuntimeError, ValueError):
+        st.info("Logistic fit for open-weight models did not converge.")
     else:
-        st.info(
-            "Open-weight models are not predicted to catch up to the current "
-            "best closed model within the next 10 years."
-        )
+        ow_L, ow_k, ow_x0 = ow_popt
+
+        if ow_L < best_closed_val:
+            st.info(
+                "Open-weight models are not predicted to catch up to the current "
+                "best closed model: the logistic ceiling "
+                f"({ow_L:.1f}) is below **{best_closed_name}**'s "
+                f"intelligence index of **{best_closed_val:.1f}**."
+            )
+        else:
+            now_ord = pd.Timestamp.today().toordinal()
+            search_ord = np.linspace(now_ord, now_ord + 365 * 10, 5000)
+            search_vals = logistic_func(search_ord - ow_x_min, ow_L, ow_k, ow_x0)
+            above = np.where(search_vals >= best_closed_val)[0]
+
+            if len(above) > 0:
+                catchup_ord = search_ord[above[0]]
+                catchup_date = pd.Timestamp.fromordinal(int(catchup_ord))
+                years_from_now = (catchup_ord - now_ord) / 365.0
+                st.success(
+                    f"Open-weight models are predicted to reach **{best_closed_name}**'s "
+                    f"intelligence index of **{best_closed_val:.1f}** by "
+                    f"**{catchup_date.date()}** "
+                    f"({years_from_now:.1f} years from now)."
+                )
+            else:
+                st.info(
+                    "Open-weight models are not predicted to catch up to the current "
+                    "best closed model within the next 10 years."
+                )
