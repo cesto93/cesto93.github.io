@@ -3,7 +3,24 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from scipy.optimize import curve_fit
+
 from utils import load_data
+
+
+def logistic_func(x, L, k, x0):
+    return L / (1 + np.exp(np.clip(-k * (x - x0), -500, 500)))
+
+
+def fit_logistic(x_shifted, y):
+    y_max = float(np.max(y))
+    upper_L = max(100.0, y_max * 1.5)
+    p0 = (y_max * 1.3, 0.005, float(np.median(x_shifted)))
+    bounds = (
+        (y_max, 0, 0),
+        (upper_L, 1.0, float(np.max(x_shifted)) + 3650),
+    )
+    return curve_fit(logistic_func, x_shifted, y, p0=p0, bounds=bounds, maxfev=20000)
 
 st.set_page_config(layout="wide", page_title="Budget Frontier")
 
@@ -24,18 +41,11 @@ max_price = st.sidebar.slider(
     value=3.0,
     step=0.10,
 )
-creators = sorted(df["creator"].dropna().unique())
-default_creators = [c for c in creators if c in {
-    "Alibaba", "Anthropic", "DeepSeek", "Google", "Z AI",
-    "Kimi", "Meta", "MiniMax", "Mistral", "NVIDIA", "OpenAI", "Xiaomi",
-}]
-selected_creators = st.sidebar.multiselect(
-    "Model creator", creators, default=default_creators
-)
 # Only consider models under the selected max price
 df = df[df["avg_price"] < max_price].copy()
 
-filtered = df[df["creator"].isin(selected_creators)]
+# No creator filter — use full dataset under the max price.
+filtered = df.copy()
 
 # Keep only the best-scoring variant per base model (e.g. Max thinking
 # over Xhigh/High/Non-reasoning) so no model appears twice on the frontier.
@@ -67,8 +77,20 @@ def build_frontier_chart(data, title, color_by="creator"):
     fig.update_traces(textposition="top center", marker=dict(size=10))
 
     x_ord = data["release_date"].map(pd.Timestamp.toordinal).astype(float)
-    coeffs = np.polyfit(x_ord, data["intelligence_index"], deg=3)
-    poly = np.poly1d(coeffs)
+    x_min = x_ord.min()
+    x_shifted = x_ord - x_min
+    y = data["intelligence_index"].values
+    try:
+        popt, _ = fit_logistic(x_shifted, y)
+    except (RuntimeError, ValueError):
+        st.info(f"Logistic fit did not converge for {title}.")
+        return
+    L_fit, k_fit, x0_fit = popt
+
+    y_pred = logistic_func(x_shifted, L_fit, k_fit, x0_fit)
+    ss_res = np.sum((y - y_pred) ** 2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
+    r_squared = 1 - ss_res / ss_tot
 
     six_months_days = 183
     x_max = x_ord.max()
@@ -80,14 +102,14 @@ def build_frontier_chart(data, title, color_by="creator"):
 
     fig.add_scatter(
         x=x_smooth_dates[hist_mask],
-        y=poly(x_smooth_ord[hist_mask]),
+        y=logistic_func(x_smooth_ord[hist_mask] - x_min, L_fit, k_fit, x0_fit),
         mode="lines",
-        name="Poly trend (deg 3)",
+        name="Logistic trend",
         line=dict(color="rgba(200,200,200,0.6)", dash="solid"),
     )
     fig.add_scatter(
         x=x_smooth_dates[proj_mask],
-        y=poly(x_smooth_ord[proj_mask]),
+        y=logistic_func(x_smooth_ord[proj_mask] - x_min, L_fit, k_fit, x0_fit),
         mode="lines",
         name="Projected 6 months",
         line=dict(color="rgba(255,100,100,0.5)", dash="dot"),
@@ -96,7 +118,16 @@ def build_frontier_chart(data, title, color_by="creator"):
     today = pd.Timestamp.today()
     x_end = max(x_max + six_months_days, today.toordinal())
     fig.update_layout(
-        title=title,
+        title=f"{title}  ·  R² = {r_squared:.3f}",
+        height=750,
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.25,
+            xanchor="center",
+            x=0.5,
+        ),
+        margin=dict(l=40, r=40, t=80, b=140),
         xaxis=dict(
             range=[
                 pd.Timestamp.fromordinal(int(x_ord.min())),
@@ -124,7 +155,7 @@ build_frontier_chart(frontier, f"Most Intelligent Model Under ${max_price:.1f} /
 
 # --------------- OPEN-WEIGHT BUDGET FRONTIER ---------------
 st.title("Open-Weight Budget Frontier")
-CLOSED_CREATORS = {"OpenAI", "Anthropic", "Google"}
+CLOSED_CREATORS = {"OpenAI", "Anthropic", "Google", "xAI", "SpaceXAI"}
 is_muse = filtered["name"].str.contains("Muse", case=False, na=False)
 ow_filtered = filtered[
     ~filtered["creator"].isin(CLOSED_CREATORS) & ~is_muse
