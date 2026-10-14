@@ -56,11 +56,25 @@
           };
         }).filter(d => d.releaseOrd != null && d.intelligenceIndex != null);
 
-        renderChart(data);
+        renderChart(dedupBestVariant(data));
       })
       .catch(err => {
         chartContainer.innerHTML = '<p style="color:red;text-align:center;padding:2rem">' + _('loadError') + ' ' + err.message + '</p>';
       });
+  }
+
+  // Keep only the best-scoring variant per base model (e.g. Max thinking
+  // over Xhigh/High/Non-reasoning) so no model appears twice on the frontier.
+  function dedupBestVariant(data) {
+    const best = new Map();
+    for (const d of data) {
+      const cur = best.get(d.cleanName);
+      if (!cur || d.intelligenceIndex > cur.intelligenceIndex ||
+          (d.intelligenceIndex === cur.intelligenceIndex && d.releaseOrd > cur.releaseOrd)) {
+        best.set(d.cleanName, d);
+      }
+    }
+    return [...best.values()];
   }
 
   function computeFrontier(data) {

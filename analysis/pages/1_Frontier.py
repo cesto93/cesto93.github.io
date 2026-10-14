@@ -39,6 +39,13 @@ filtered = df[
     & (df["intelligence_index"].between(intel_range[0], intel_range[1]))
 ]
 
+# Keep only the best-scoring variant per base model (e.g. Max thinking
+# over Xhigh/High/Non-reasoning) so no model appears twice on the frontier.
+filtered = (
+    filtered.sort_values(["intelligence_index", "release_date"], ascending=[False, False])
+    .drop_duplicates(subset=["clean_name"], keep="first")
+)
+
 # --------------- FRONTIER: Most Intelligent Model Over Time ---------------
 st.title("Most Intelligent Model Over Time")
 

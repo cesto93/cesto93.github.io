@@ -59,7 +59,7 @@
       .then(r => r.json())
       .then(raw => {
         const maxDate = root.dataset.maxDate;
-        const allData = raw.data.filter(m => !maxDate || !m.release_date || m.release_date <= maxDate).map(m => {
+        const allData = dedupBestVariant(raw.data.filter(m => !maxDate || !m.release_date || m.release_date <= maxDate).map(m => {
           const rd = m.release_date ? new Date(m.release_date) : null;
           return {
             name: m.name || '',
@@ -69,7 +69,7 @@
             releaseOrd: rd ? toOrd(rd) : null,
             intelligenceIndex: m.evaluations?.artificial_analysis_intelligence_index,
           };
-        }).filter(d => d.releaseOrd != null && d.intelligenceIndex != null);
+        }).filter(d => d.releaseOrd != null && d.intelligenceIndex != null));
 
         const owData = allData.filter(d => !isClosedWeight(d));
         const closedData = allData.filter(d => isClosedWeight(d));
@@ -80,6 +80,20 @@
       .catch(err => {
         chartContainer.innerHTML = '<p style="color:red;text-align:center;padding:2rem">' + _('loadError') + ' ' + err.message + '</p>';
       });
+  }
+
+  // Keep only the best-scoring variant per base model (e.g. Max thinking
+  // over Xhigh/High/Non-reasoning) so no model appears twice on the frontier.
+  function dedupBestVariant(data) {
+    const best = new Map();
+    for (const d of data) {
+      const cur = best.get(d.cleanName);
+      if (!cur || d.intelligenceIndex > cur.intelligenceIndex ||
+          (d.intelligenceIndex === cur.intelligenceIndex && d.releaseOrd > cur.releaseOrd)) {
+        best.set(d.cleanName, d);
+      }
+    }
+    return [...best.values()];
   }
 
   function computeFrontier(data) {

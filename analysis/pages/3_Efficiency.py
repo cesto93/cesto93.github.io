@@ -37,6 +37,13 @@ df = df[df["avg_price"] < max_price].copy()
 
 filtered = df[df["creator"].isin(selected_creators)]
 
+# Keep only the best-scoring variant per base model (e.g. Max thinking
+# over Xhigh/High/Non-reasoning) so no model appears twice on the frontier.
+filtered = (
+    filtered.sort_values(["intelligence_index", "release_date"], ascending=[False, False])
+    .drop_duplicates(subset=["clean_name"], keep="first")
+)
+
 # --------------- BUDGET FRONTIER ---------------
 st.title(f"Most Intelligent Model Under ${max_price:.1f} / 1M Tokens")
 
