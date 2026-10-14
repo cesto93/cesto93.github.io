@@ -127,8 +127,10 @@ build_frontier_chart(frontier, "Most Intelligent Model Over Time")
 
 # --------------- OPEN-WEIGHT FRONTIER ---------------
 st.title("Open-Weight Frontier")
+CLOSED_CREATORS = {"OpenAI", "Anthropic", "Google"}
+is_muse_ow = filtered["name"].str.contains("Muse", case=False, na=False)
 ow_filtered = filtered[
-    ~filtered["creator"].isin({"OpenAI", "Anthropic", "Google"})
+    ~filtered["creator"].isin(CLOSED_CREATORS) & ~is_muse_ow
 ]
 ow_frontier = compute_frontier(ow_filtered)
 build_frontier_chart(ow_frontier, "Most Intelligent Open-Weight Model Over Time", color_by="creator")
@@ -136,8 +138,9 @@ build_frontier_chart(ow_frontier, "Most Intelligent Open-Weight Model Over Time"
 # --------------- PREDICTION: When will open-weight catch up? ---------------
 st.title("Open-Weight Catch-Up Prediction")
 
-closed_creators = {"OpenAI", "Anthropic", "Google"}
-closed_frontier = frontier[frontier["creator"].isin(closed_creators)]
+closed_creators = CLOSED_CREATORS
+is_muse_closed = frontier["name"].str.contains("Muse", case=False, na=False)
+closed_frontier = frontier[frontier["creator"].isin(closed_creators) | is_muse_closed]
 
 if closed_frontier.empty or ow_frontier.empty:
     st.info("Not enough data to make a prediction.")

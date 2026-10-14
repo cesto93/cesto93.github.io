@@ -9,6 +9,11 @@
 
   const CLOSED_CREATORS = new Set(['OpenAI', 'Anthropic', 'Google', 'xAI']);
 
+  // Muse models (Meta) are closed-weight despite the Meta creator label.
+  function isClosedWeight(d) {
+    return CLOSED_CREATORS.has(d.creator) || /muse/i.test(d.name || '');
+  }
+
   const lang = root.dataset.lang === 'it' ? 'it' : 'en';
 
   const i18n = {
@@ -57,6 +62,7 @@
         const allData = raw.data.filter(m => !maxDate || !m.release_date || m.release_date <= maxDate).map(m => {
           const rd = m.release_date ? new Date(m.release_date) : null;
           return {
+            name: m.name || '',
             cleanName: m.name.replace(/\s*\(.*?\)/g, '').trim(),
             creator: m.model_creator?.name || 'Unknown',
             releaseDate: rd,
@@ -65,8 +71,8 @@
           };
         }).filter(d => d.releaseOrd != null && d.intelligenceIndex != null);
 
-        const owData = allData.filter(d => !CLOSED_CREATORS.has(d.creator));
-        const closedData = allData.filter(d => CLOSED_CREATORS.has(d.creator));
+        const owData = allData.filter(d => !isClosedWeight(d));
+        const closedData = allData.filter(d => isClosedWeight(d));
 
         renderOwChart(owData);
         renderCatchup(computeFrontier(owData), computeFrontier(closedData));

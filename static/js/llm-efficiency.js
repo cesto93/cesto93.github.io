@@ -82,6 +82,11 @@
 
   const CLOSED = new Set(['OpenAI', 'Anthropic', 'Google']);
 
+  // Muse models (Meta) are closed-weight despite the Meta creator label.
+  function isClosedWeight(d) {
+    return CLOSED.has(d.creator) || /muse/i.test(d.name || '');
+  }
+
   // --------------- controls ---------------
   function buildControls() {
     controls.innerHTML =
@@ -100,7 +105,7 @@
       return d.avgPrice < maxPrice;
     });
     renderChart(chart1, filtered, _('frontierTitle').replace('${price}', maxPrice.toFixed(1)));
-    var ow = filtered.filter(function (d) { return !CLOSED.has(d.creator); });
+    var ow = filtered.filter(function (d) { return !isClosedWeight(d); });
     renderChart(chart2, ow, _('owTitle').replace('${price}', maxPrice.toFixed(1)));
   }
 
@@ -224,6 +229,7 @@
           var po = m.pricing ? m.pricing.price_1m_output_tokens : null;
           var avg = pi != null && po != null ? (pi + po) / 2 : null;
           return {
+            name: m.name || '',
             cleanName: m.name.replace(/\s*\(.*?\)/g, '').trim(),
             creator: m.model_creator ? m.model_creator.name : 'Unknown',
             releaseDate: rd,

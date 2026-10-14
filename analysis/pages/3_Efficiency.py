@@ -117,8 +117,10 @@ build_frontier_chart(frontier, f"Most Intelligent Model Under ${max_price:.1f} /
 
 # --------------- OPEN-WEIGHT BUDGET FRONTIER ---------------
 st.title("Open-Weight Budget Frontier")
+CLOSED_CREATORS = {"OpenAI", "Anthropic", "Google"}
+is_muse = filtered["name"].str.contains("Muse", case=False, na=False)
 ow_filtered = filtered[
-    ~filtered["creator"].isin({"OpenAI", "Anthropic", "Google"})
+    ~filtered["creator"].isin(CLOSED_CREATORS) & ~is_muse
 ]
 ow_frontier = compute_frontier(ow_filtered)
 build_frontier_chart(ow_frontier, f"Most Intelligent Open-Weight Model Under ${max_price:.1f} / 1M Tokens", color_by="creator")
