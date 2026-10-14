@@ -17,27 +17,8 @@ df = load_data()
 
 df["clean_name"] = df["name"].str.replace(r"\s*\(.*?\)", "", regex=True).str.strip()
 
-# --------------- SIDEBAR ---------------
-st.sidebar.title("Filters")
-creators = sorted(df["creator"].dropna().unique())
-default_creators = [c for c in creators if c in {
-    "Alibaba", "Anthropic", "DeepSeek", "Google", "Z AI",
-    "Kimi", "Meta", "MiniMax", "Mistral", "NVIDIA", "OpenAI", "Xiaomi",
-}]
-selected_creators = st.sidebar.multiselect(
-    "Model creator", creators, default=default_creators
-)
-intel_range = st.sidebar.slider(
-    "Intelligence index range",
-    min_value=0.0,
-    max_value=float(df["intelligence_index"].max()),
-    value=(0.0, float(df["intelligence_index"].max())),
-)
-
-filtered = df[
-    (df["creator"].isin(selected_creators))
-    & (df["intelligence_index"].between(intel_range[0], intel_range[1]))
-]
+# No sidebar filters on this page — use full dataset.
+filtered = df.copy()
 
 # Keep only the best-scoring variant per base model (e.g. Max thinking
 # over Xhigh/High/Non-reasoning) so no model appears twice on the frontier.
@@ -107,6 +88,15 @@ def build_frontier_chart(data, title, color_by="creator"):
     x_end = max(x_max + six_months_days, today.toordinal())
     fig.update_layout(
         title=f"{title}  ·  R² = {r_squared:.3f}",
+        height=750,
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.25,
+            xanchor="center",
+            x=0.5,
+        ),
+        margin=dict(l=40, r=40, t=80, b=140),
         xaxis=dict(
             range=[
                 pd.Timestamp.fromordinal(int(x_ord.min())),
