@@ -7,7 +7,7 @@ tags:
   - IA
   - dati
   - dashboard
-translationKey: "llm-progress-analysis"
+translationKey: "llm-progress-analysis-2"
 ---
 
 Questo post è il seguito di [Analisi progresso LLM]({{< relref "/posts/progressi_llm" >}}). Ho pensato di scriverlo perché è passato del tempo e possiamo fare alcune considerazioni sulle previsioni fatte.
