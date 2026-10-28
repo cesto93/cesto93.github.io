@@ -42,9 +42,11 @@ analysis/                    # Python project (uv, Python 3.13)
   streamlit_app.py           #   optional local Streamlit dashboard
   .env.example               #   needs ARTIFICIAL_ANALYSIS_KEY
 static/data/                 # checked-in JSON consumed by shortcodes
-layouts/shortcodes/          # llm-dashboard, llm-open-dashboard, llm-efficiency, llm-cheap-task, llm-intel-per-cost, llm-logistic, llm-open-logistic
+layouts/shortcodes/          # llm-dashboard, llm-open-dashboard, llm-efficiency, llm-cheap-task, llm-intel-per-cost, llm-logistic, llm-open-logistic, ai-timeline
 static/js/                   # companion JS for each shortcode
 ```
+
+`ai-timeline` is the exception: it has no JSON data source. Milestones live inline in `static/js/ai-timeline.js` under `TIMELINES` (keyed by name, selected with the `timeline` shortcode param, default `dev-tools`), with `precision: 'month'` for entries where only the month is known. It draws a horizontal Plotly timeline, alternates labels above/below the axis and adds extra rows on the same side when measured label widths would collide, is theme-aware, and becomes horizontally scrollable below 620px. To add a milestone, append an event to the `TIMELINES` entry (and keep the post table in sync).
 
 Logistic shortcodes (`llm-logistic`, `llm-open-logistic`) port `analysis/pages/1_Frontier.py` (`L/(1+exp(-k*(x-x0)))` with bounds `L in [yMax, max(100, yMax*1.5)]`, `k in [0,1]`, `x0 in [0, xMax+3650]`) to JS via Nelder-Mead on logit-transformed params — no scipy in the browser. Open variant also ports the 10-year catch-up search + ceiling check.
 

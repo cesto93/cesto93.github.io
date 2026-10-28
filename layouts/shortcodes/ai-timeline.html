@@ -1,0 +1,25 @@
+<script src="https://cdn.jsdelivr.net/npm/plotly.js@2.35.2/dist/plotly.min.js"></script>
+<script src="/js/ai-timeline.js" defer></script>
+<style>
+#ai-timeline {
+  font-family: system-ui, -apple-system, sans-serif;
+  margin: 1.5rem 0;
+}
+#ai-timeline .ai-timeline-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+#ai-timeline .ai-timeline-chart {
+  width: 100%;
+}
+@media (max-width: 620px) {
+  #ai-timeline .ai-timeline-chart {
+    min-width: 620px;
+  }
+}
+</style>
+<div id="ai-timeline" class="ai-timeline" data-timeline="{{ .Get "timeline" | default "dev-tools" }}" data-lang="{{ .Page.Lang }}">
+  <div class="ai-timeline-scroll">
+    <div class="ai-timeline-chart" id="ai-timeline-chart"></div>
+  </div>
+</div>
